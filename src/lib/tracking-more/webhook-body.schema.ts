@@ -1,0 +1,96 @@
+import { z } from "zod";
+
+const trackInfoSchema = z.object({
+  checkpoint_date: z.string(),
+  tracking_detail: z.string(),
+  location: z.string(),
+  checkpoint_delivery_status: z.string(),
+  checkpoint_delivery_substatus: z.string(),
+  country_iso2: z.string().nullable(),
+  state: z.string().nullable(),
+  city: z.string().nullable(),
+  zip: z.string().nullable(),
+  raw_status: z.string().nullable(),
+});
+
+const milestoneDateSchema = z.object({
+  inforeceived_date: z.string(),
+  pickup_date: z.string(),
+  outfordelivery_date: z.string(),
+  delivery_date: z.string(),
+  returning_date: z.string().nullable(),
+  returned_date: z.string().nullable(),
+});
+
+const originInfoSchema = z.object({
+  courier_code: z.string(),
+  courier_phone: z.string().nullable(),
+  weblink: z.string(),
+  reference_number: z.string().nullable(),
+  milestone_date: milestoneDateSchema,
+  pickup_date: z.string(),
+  departed_airport_date: z.string().nullable(),
+  arrived_abroad_date: z.string().nullable(),
+  customs_received_date: z.string().nullable(),
+  arrived_destination_date: z.string(),
+  trackinfo: z.array(trackInfoSchema),
+});
+
+const dataSchema = z.object({
+  id: z.string(),
+  tracking_number: z.string(),
+  courier_code: z.string(),
+  order_number: z.string(),
+  order_date: z.string(),
+  created_at: z.string(),
+  update_at: z.string(),
+  delivery_status: z.string(),
+  archived: z.string(),
+  updating: z.boolean(),
+  destination_country: z.string(),
+  destination_state: z.string().nullable(),
+  destination_city: z.string().nullable(),
+  origin_country: z.string(),
+  origin_state: z.string().nullable(),
+  origin_city: z.string().nullable(),
+  tracking_postal_code: z.string().nullable(),
+  tracking_ship_date: z.string().nullable(),
+  tracking_destination_country: z.string().nullable(),
+  tracking_origin_country: z.string().nullable(),
+  tracking_courier_account: z.string().nullable(),
+  tracking_key: z.string().nullable(),
+  customer_name: z.string(),
+  customer_email: z.string(),
+  customer_sms: z.string(),
+  order_id: z.string(),
+  title: z.string(),
+  logistics_channel: z.string().nullable(),
+  note: z.string(),
+  signed_by: z.string().nullable(),
+  service_code: z.string(),
+  weight: z.number().nullable(),
+  weight_kg: z.number().nullable(),
+  product_type: z.string().nullable(),
+  pieces: z.number().nullable(),
+  dimension: z.string().nullable(),
+  substatus: z.string(),
+  status_info: z.string().nullable(),
+  previously: z.string().nullable(),
+  destination_track_number: z.string().nullable(),
+  exchange_number: z.string().nullable(),
+  scheduled_delivery_date: z.string().nullable(),
+  scheduled_address: z.string().nullable(),
+  latest_event: z.string(),
+  latest_checkpoint_time: z.string(),
+  transit_time: z.number(),
+  origin_info: originInfoSchema,
+  destination_info: z.object({}),
+});
+
+export const responseSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+  data: dataSchema,
+});
+
+export type TWebhookResponse = z.infer<typeof responseSchema>;
