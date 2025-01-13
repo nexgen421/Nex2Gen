@@ -12,6 +12,15 @@ import { type TrackingItem } from "~/lib/tracking-more/modules/types";
 import moment from "moment";
 import { type Prisma } from "@prisma/client";
 
+interface UserAwbDetails {
+  awbNumber?: number | null;
+}
+
+interface Order {
+  userAwbDetails: UserAwbDetails;
+  // other properties of the order
+}
+
 const RejectOrderValidator = z.object({
   orderId: z.string(),
 });
@@ -503,7 +512,7 @@ const orderRouter = createTRPCRouter({
         orderBy: { orderDate: "desc" },
       });
 
-      const modifiedOrders = orders.map((order:any) => ({
+      const modifiedOrders = orders.map((order) => ({
         ...order,
         userAwbDetails: {
           awbNumber: order.userAwbDetails?.awbNumber

@@ -49,6 +49,43 @@ import {
 } from "~/components/ui/alert-dialog";
 
 // Add custom hook for debounce
+
+// Define the structure for KYC details and company info
+interface CompanyInfo {
+  companyName?: string;
+  companyType?: string;
+  companyEmail?: string;
+  companyContactNumber?: string;
+}
+
+// Define the structure for KYC details
+interface KYCDetails {
+  companyInfo?: CompanyInfo;
+}
+
+// Define the structure for Wallet
+interface Wallet {
+  currentBalance: number;
+}
+
+// Define the structure for User
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  isApproved: boolean;
+  isKycSubmitted: boolean;
+  createdAt: string; // Assuming ISO string format; adjust if necessary
+  wallet: Wallet;
+  kycDetails?: KYCDetails;
+}
+
+interface UserData {
+  users: User[];
+}
+
+
 const useDebounce = <T,>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -97,7 +134,7 @@ const UserTable = ({ users, onApprove, onDelete }: UserTableProps) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user:any) => (
+        {users.map((user) => (
           <TableRow key={user.id}>
             <TableCell className="hidden sm:table-cell">
               <Avatar className="h-8 w-8">

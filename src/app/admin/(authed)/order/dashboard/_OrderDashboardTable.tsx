@@ -18,6 +18,37 @@ import PagePagination from "~/components/layout/PagePagination";
 import { Card, CardContent, CardTitle, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { RefreshCw, Filter } from "lucide-react";
+// Assuming ShipmentStatus is the correct enum based on your Prisma schema
+
+type ShipmentStatus =
+  | "PENDING"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "INFORECEIVED"  // Add the missing status
+  | "OTHER_STATUS"; // Add other statuses as needed
+
+interface Shipment {
+  id: string;
+  dbOrderId: string;
+  awbNumber: string;
+  courierProvider: string;
+  trackingId: string;
+  createdAt: Date;
+  updatedAt: Date | null;
+  status: ShipmentStatus;  // Ensure the ShipmentStatus type is correct
+  subStatus: string | null;
+  latestEvent: string | null;
+}
+
+type OrderStatus = "BOOKED" | "CANCELLED" | "PENDING" | "SHIPPED" | "READY_TO_SHIP";
+
+interface Order {
+  id: string;
+  orderId: number;
+  status: OrderStatus;
+  shipment: Shipment | null | undefined; // Allow shipment to be null or undefined
+  orderPricing?: { price?: number };
+}
 
 const OrderDashboardTable = () => {
   const params = useSearchParams();
@@ -56,15 +87,13 @@ const OrderDashboardTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orderData?.orders?.map((order:any) => (
+              {orderData?.orders?.map((order) => (
                 <TableRow key={order.id} className="hover:bg-slate-50">
                   <TableCell className="font-medium">{order.orderId}</TableCell>
                   <TableCell>
                     <Badge
                       className="rounded-full px-4"
-                      variant={
-                        order.status === "BOOKED" ? "secondary" : "default"
-                      }
+                      variant={order.status === "BOOKED" ? "secondary" : "default"}
                     >
                       {order.status}
                     </Badge>
@@ -82,14 +111,10 @@ const OrderDashboardTable = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">
-                      ₹{order.orderPricing?.price}
-                    </span>
+                    <span className="font-medium">₹{order.orderPricing?.price}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-gray-700">
-                      {order.shipment?.courierProvider}
-                    </span>
+                    <span className="text-gray-700">{order.shipment?.courierProvider}</span>
                   </TableCell>
                 </TableRow>
               ))}

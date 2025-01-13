@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 // });
 
 
+
 const paymentRouter = createTRPCRouter({
   paymentCreate: publicProcedure
     .input(
@@ -30,9 +31,7 @@ const paymentRouter = createTRPCRouter({
             'Content-Type': 'multipart/form-data',
           }
         });
-        if (response.data.status) {
-          debugger
-          console.log("working")
+        if (response.data?.status) {
           const wallet = await ctx.db.wallet.findUnique({
             where: {
               userId: ctx.session?.user.id,
@@ -59,7 +58,7 @@ const paymentRouter = createTRPCRouter({
           });
 
         }
-        return { data: response.data };  // return the data from the API
+        return { data: response.data?.result?.payment_url };  // return the data from the API
       } catch (error) {
         console.error(error, "Error while adding funds");
         throw new Error("Failed to create payment order");

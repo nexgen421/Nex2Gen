@@ -52,13 +52,14 @@ import CustomCard from "~/components/ui/custom-card";
 
 type FetchAllResponse = Awaited<ReturnType<typeof TRPCType.user.fetchAll>>;
 
-type UserTableProps = {
-  users: FetchAllResponse["users"];
-  onApprove: (id: string) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
-};
+// type UserTableProps = {
+//   users: FetchAllResponse["users"];
+//   onApprove: (id: string) => Promise<void>;
+//   onDelete: (id: string) => Promise<void>;
+// };
 
-const UserTable = ({ users, onApprove, onDelete }: UserTableProps) => {
+
+const UserTable = ({ users, onApprove, onDelete }: any) => {
   const router = useRouter();
   return (
     <Table>
@@ -97,7 +98,7 @@ const UserTable = ({ users, onApprove, onDelete }: UserTableProps) => {
             <TableCell className="text-xs font-medium">{user.name}</TableCell>
 
             <TableCell className="text-xs">{user.email}</TableCell>
-            <TableCell className="text-xs">{user.wallet.currentBalance}</TableCell>
+            <TableCell className="text-xs">{user?.wallet?.currentBalance}</TableCell>
             <TableCell className="text-xs">{user?.kycDetails?.companyInfo?.companyType}</TableCell>
             <TableCell className="text-xs">{user?.kycDetails?.companyInfo?.companyName}</TableCell>
             <TableCell className="text-xs">{user?.kycDetails?.companyInfo?.companyEmail}</TableCell>
@@ -186,13 +187,11 @@ export const UserOrderDashboardTable = () => {
       search: '', // Use debounced value here
     });
 
-  const { data: userProfileData, isLoading } = api.user.fetchAllUserProfileRevenue.useQuery({
+  const { data: userProfileData, isLoading }: any = api.user.fetchAllUserProfileRevenue.useQuery({
     cursor: currentPage,
     filter: currentTab,
     search: '',
   });
-
-  console.log(userProfileData, "USER DETAIL DAT CHECK")
 
   return (
 
@@ -310,21 +309,21 @@ export const UserOrderDashboardTable = () => {
         ))} */}
 
           <UserTable
-            users={userProfileData?.users ?? []}
-          // onApprove={()=>{}}
-          // onDelete={()=>{}}
+            users={userProfileData?.users}
+            onApprove={() => { }}
+            onDelete={() => { }}
           />
         </TableBody>
         <TableFooter>
           <TableRow>
-          <TableCell colSpan={5} className="bg-white">
-            <PagePagination
-              pageUrl={pathname}
-              totalItems={userProfileData?.usersCount ?? 0}
-              itemsPerPage={10}
-            />
-          </TableCell>
-        </TableRow>
+            <TableCell colSpan={5} className="bg-white">
+              <PagePagination
+                pageUrl={pathname}
+                totalItems={userProfileData?.usersCount ?? 0}
+                itemsPerPage={10}
+              />
+            </TableCell>
+          </TableRow>
         </TableFooter>
       </Table>
 

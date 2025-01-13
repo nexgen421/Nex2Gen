@@ -127,7 +127,7 @@ const TrackingWithId = ({ params }: { params: { awbNumber: number } }) => {
                 >
                   <Package className="h-5 w-5 text-blue-500" />
                   <span className="font-medium">AWB Number:</span>
-                  <span>{data.shipment.awbNumber}</span>
+                  <span>{data?.shipment?.awbNumber}</span>
                 </motion.div>
                 <motion.div
                   className="flex items-center space-x-2"
@@ -143,7 +143,7 @@ const TrackingWithId = ({ params }: { params: { awbNumber: number } }) => {
                 >
                   <Package className="h-6 w-6 text-blue-500" />
                   <span className="font-medium">Courier Name:</span>
-                  <span>{data.shipment.courierProvider}</span>
+                  <span>{data?.shipment?.courierProvider}</span>
                 </motion.div>
                 <motion.div
                   className="flex items-center space-x-2"

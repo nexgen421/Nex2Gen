@@ -19,6 +19,28 @@ import { Card, CardContent, CardTitle, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { RefreshCw, Filter } from "lucide-react";
 
+interface Shipment {
+  awbNumber?: string;
+  courierProvider?: string;
+}
+
+interface OrderPricing {
+  price: number;
+}
+
+interface Order {
+  id: string;
+  orderId: string;
+  status: "BOOKED" | "SHIPPED" | "DELIVERED"; // Define your order statuses
+  shipment?: Shipment;
+  orderPricing?: OrderPricing;
+}
+
+interface OrderData {
+  orders?: Order[];
+}
+
+
 const OrderDashboardTable = () => {
   const params = useSearchParams();
   const { isLoading, data: orderData } = api.order.getApprovedOrders.useQuery({
@@ -56,15 +78,13 @@ const OrderDashboardTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orderData?.orders?.map((order:any) => (
+              {orderData?.orders?.map((order) => (
                 <TableRow key={order.id} className="hover:bg-slate-50">
                   <TableCell className="font-medium">{order.orderId}</TableCell>
                   <TableCell>
                     <Badge
                       className="rounded-full px-4"
-                      variant={
-                        order.status === "BOOKED" ? "secondary" : "default"
-                      }
+                      variant={order.status === "BOOKED" ? "secondary" : "default"}
                     >
                       {order.status}
                     </Badge>
@@ -82,14 +102,10 @@ const OrderDashboardTable = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">
-                      ₹{order.orderPricing?.price}
-                    </span>
+                    <span className="font-medium">₹{order.orderPricing?.price}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-gray-700">
-                      {order.shipment?.courierProvider}
-                    </span>
+                    <span className="text-gray-700">{order.shipment?.courierProvider}</span>
                   </TableCell>
                 </TableRow>
               ))}

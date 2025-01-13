@@ -59,6 +59,37 @@ interface UserOrderTableProps {
     };
   }
 
+  interface Order {
+    id: string;
+    user: {
+      kycDetails: {
+        companyInfo: {
+          companyName: string;
+        } | null;
+      } | null;
+      name: string;
+    };
+    pickupLocation: {
+      mobileNumber: string;
+      address: string;
+      city: string;
+      state: string;
+      pincode: string | number;  // Allow pincode to be either a string or a number
+    };
+    orderAdressDetails: {
+      houseNumber: string;
+      streetName: string;
+      famousLandmark: string;
+      city: string;
+      state: string;
+      pincode: string | number;  // Ensure pincode can be either type
+    };
+    orderDate: string;
+    productName: string;
+    orderCategory: string;
+    // Add any other fields here as necessary
+  }
+  
 const Page : React.FC<UserOrderTableProps> = ({ params }) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -145,7 +176,7 @@ const Page : React.FC<UserOrderTableProps> = ({ params }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Order Requests Count :  {data?.orders?.length || 0}</CardTitle>
+        <CardTitle>Order Requests Count :  {data?.orders?.length && 0}</CardTitle>
         <CardDescription>View Recent Order Requests</CardDescription>
         {/* Bulk action dropdown */}
         <DropdownMenu>
@@ -176,7 +207,7 @@ const Page : React.FC<UserOrderTableProps> = ({ params }) => {
                   type="checkbox"
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setSelectedOrders(data?.orders.map((o: any) => o.id) ?? []);
+                      setSelectedOrders(data?.orders.map((o) => o.id) ?? []);
                     } else {
                       setSelectedOrders([]);
                     }
@@ -198,7 +229,7 @@ const Page : React.FC<UserOrderTableProps> = ({ params }) => {
           </TableHeader>
           <TooltipProvider>
             <TableBody>
-              {data?.orders.map((order: any) => {
+              {data?.orders.map((order) => {
                 return (
                   <TableRow key={order.id}>
                     <TableCell>

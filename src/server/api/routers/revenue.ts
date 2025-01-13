@@ -77,7 +77,7 @@ const revenueRouter = createTRPCRouter({
           // },
         },
       });
-      const totalRevenue = revenue._sum.amount !== null ? parseFloat(revenue._sum.amount) : 0.0;
+      const totalRevenue = revenue._sum.amount !== null ? parseFloat(revenue?._sum.amount.toString()) : 0.0;
 
       return totalRevenue;
     }),

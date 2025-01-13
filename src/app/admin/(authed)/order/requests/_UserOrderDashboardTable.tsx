@@ -17,6 +17,21 @@ import PagePagination from "~/components/layout/PagePagination";
 import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 
+interface User {
+  id: string;
+  name: string;
+  companyName: string | null; // Assuming companyName can be null
+  email: string;
+  bookedOrdersCount: number;
+  processingOrdersCount: number;
+}
+
+interface UserData {
+  orderData: User[]; // Array of User objects
+}
+
+
+
 export const UserOrderDashboardTable = () => {
   const params = useSearchParams();
   const { isLoading, data: orderData } =
@@ -44,7 +59,7 @@ export const UserOrderDashboardTable = () => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {orderData?.userData?.map((user:any) => (
+        {orderData?.userData?.map((user: User) => (
           <TableRow key={user.id} className="hover:bg-slate-50">
             <TableCell className="font-medium">
               <div>

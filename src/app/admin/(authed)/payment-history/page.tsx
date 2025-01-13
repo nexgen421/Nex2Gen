@@ -24,6 +24,41 @@ import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import moment from "moment";
 
+
+import { Moment } from "moment";
+
+// Define the structure for company information in KYC details
+interface CompanyInfo {
+  companyName: string | null;
+}
+
+// Define the structure for KYC details
+interface KYCDetails {
+  companyInfo?: CompanyInfo | null;
+}
+
+// Define the structure for the user
+interface User {
+  name: string;
+  kycDetails?: KYCDetails;
+}
+
+// Define the structure for the wallet
+interface Wallet {
+  user: User;
+}
+
+// Define the structure for the payment
+interface Payment {
+  id: string;
+  wallet: Wallet;
+  referenceNumber: string;
+  amount: number;
+  createdAt: string; // Assuming createdAt is a string that moment.js can parse
+}
+
+
+
 const PaymentsHistoryPage = () => {
   const pathname = usePathname();
   ``;
@@ -57,7 +92,7 @@ const PaymentsHistoryPage = () => {
           </TableHeader>
 
           <TableBody>
-            {data?.map((payment:any) => {
+            {data?.map((payment) => {
               return (
                 <TableRow key={payment.id}>
                   <TableCell>

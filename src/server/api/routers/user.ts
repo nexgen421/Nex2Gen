@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -7,7 +9,7 @@ import {
 } from "../trpc";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@prisma/client";
+import { type Prisma } from "@prisma/client";
 import axios from 'axios';
 export const FetchAllUsersValidator = z.object({
   cursor: z.number().optional(),
@@ -85,7 +87,7 @@ const userRouter = createTRPCRouter({
       PICKUP: 0,
     };
 
-    shipments.forEach((count: any) => {
+    shipments.forEach((count) => {
       switch (count.status) {
         case "INFORECEIVED":
           shipmentCount.INFORECEIVED = count._count.status;
@@ -198,15 +200,16 @@ const userRouter = createTRPCRouter({
       },
     });
 
-    for (let i = 0; i < unapprovedRequests.length; i++) {
-      let obj = {
-        "user_token": "1e718255af0d6dc004e4e2d860a90c6f", "order_id": unapprovedRequests[i]?.referenceNumber
+    // for (let i = 0; i < unapprovedRequests.length; i++) {
+    for(const data of unapprovedRequests){
+      const obj = {
+        "user_token": "1e718255af0d6dc004e4e2d860a90c6f", "order_id": data.referenceNumber
       }
       // try {
-      const response = await axios.post('https://pay.imb.org.in/api/check-order-status', obj, {});
+      const response : any = await axios.post('https://pay.imb.org.in/api/check-order-status', obj, {});
       const walletRequest = await ctx.db.walletRequest.findFirst({
         where: {
-          referenceNumber: unapprovedRequests[i].referenceNumber,
+          referenceNumber: data.referenceNumber,
         },
       });
 
@@ -216,14 +219,15 @@ const userRouter = createTRPCRouter({
           message: "Wallet request not found",
         });
       }
-      if (response.data.status == 'ERROR') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (response?.data?.status == 'ERROR') {
         await ctx.db.walletRequest.update({
           where: {
             id: walletRequest.id,
           },
           data: {
             isApproved: true,
-            status: response.data.status
+            status: response?.data?.status
           },
         });
         continue;
@@ -253,7 +257,7 @@ const userRouter = createTRPCRouter({
                 type: "CREDIT",
                 status: "SUCCESS",
                 reason: "Funds added to wallet",
-                walletReferenceId: unapprovedRequests[i]?.referenceNumber
+                walletReferenceId: response?.data?.referenceNumber
               },
             },
           },

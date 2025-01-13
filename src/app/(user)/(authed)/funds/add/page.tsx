@@ -17,10 +17,27 @@ import Loading from "~/app/loading";
 import { Label } from "~/components/ui/label";
 import axios from "axios";
 import { Axis3D } from "lucide-react";
+import { string } from "zod";
 
 interface TRefNumber {
   refNumber: string;
 }
+
+// interface PaymentCreateResponse {
+//   data: {
+//     result: {
+//       payment_url: string;
+//       amount: string;
+//       order_id: string;
+//       customerEmail: string;
+//       [key: string]: string; // Allow additional string properties in `result`
+//     };
+//     // [key: string]: any; // Allow additional properties in `data`
+//   };
+// }
+
+
+
 
 const AddFundsPage = () => {
   const { data, isLoading } = api.wallet.getFunds.useQuery();
@@ -63,11 +80,12 @@ const AddFundsPage = () => {
     try {
       const data = await paymentCreate({
         amount,
-        order_id,
+        order_id ,
         customerEmail,
       })
 
-      setPaymentUrl(data.data.result.payment_url);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      setPaymentUrl(data?.data);
       // window.open(data.data.result.payment_url)
 
     } catch (error) {
