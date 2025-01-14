@@ -206,7 +206,7 @@ const userRouter = createTRPCRouter({
         "user_token": "1e718255af0d6dc004e4e2d860a90c6f", "order_id": data.referenceNumber
       }
       // try {
-      const response : any = await axios.post('https://pay.imb.org.in/api/check-order-status', obj, {});
+      const response  = await axios.post('https://pay.imb.org.in/api/check-order-status', obj, {});
       const walletRequest = await ctx.db.walletRequest.findFirst({
         where: {
           referenceNumber: data.referenceNumber,
