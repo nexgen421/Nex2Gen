@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { type ShipmentStatus } from "@prisma/client";
 import { type TrackingItem } from "~/lib/tracking-more/modules/types";
 import { env } from "~/env";
-
+import { type Prisma } from "@prisma/client";
 const adminOrderRouter = createTRPCRouter({
   approveOrder: ultraProtectedProcedure
     .input(
@@ -117,6 +117,111 @@ const adminOrderRouter = createTRPCRouter({
         console.log(error);
         throw error;
       }
+    }),
+  getAllOrdersAdmin: ultraProtectedProcedure
+    .input(
+      z.object({
+        cursor: z.number().optional(),
+        limit: z.number().min(10).max(100).default(10),
+        awbNumber: z.string().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const where: Prisma.OrderWhereInput = {
+        // userId: ctx.session.user.id,
+        ...(input.awbNumber && {
+          userAwbDetails: {
+            awbNumber: parseInt(input.awbNumber, 10),
+          },
+        }),
+        ...(input.startDate && {
+          orderDate: {
+            gte: input.startDate,
+          },
+        }),
+        ...(input.endDate && {
+          orderDate: {
+            ...(input.startDate ? { gte: input.startDate } : {}),
+            lte: input.endDate,
+          },
+        }),
+      };
+
+      const orders = await ctx.db.order.findMany({
+        where,
+        skip: (input.cursor ?? 0) * input.limit,
+        take: input.limit,
+        include: {
+          shipment: true,
+          userAwbDetails: true,
+          orderCustomerDetails: true,
+          user: {
+            select: {
+              name: true,
+              kycDetails: {
+                select: {
+                  id: true,
+                  userId: true,
+                  // mobile:true
+                  // CompanyInfo:true
+                  companyInfo: true
+                },
+              }
+              // mobile:true
+            },
+            // include: {
+
+            // }
+          }
+          // orderPaymentDetails: true,
+        },
+        orderBy: {
+          orderDate: "desc",
+        },
+      });
+
+      const totalOrderCount = await ctx.db.order.count({
+        where: {
+          // userId: ctx.session.user.id,
+        },
+      });
+
+      return {
+        orders: orders.map((order) => ({
+          ...order,
+          userAwbDetails: {
+            ...order.userAwbDetails,
+            awbNumber: order.userAwbDetails?.awbNumber
+              ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
+              : undefined,
+          },
+        })),
+        totalOrderCount,
+      };
+    }),
+  getSingleOrderDetails: ultraProtectedProcedure
+    .input(z.object({ orderId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const order = await ctx.db.order.findFirstOrThrow({
+        where: {
+          orderId: input.orderId,
+          // userId: ctx.session.user.id,
+        },
+        include: {
+          orderAdressDetails: true,
+          orderCustomerDetails: true,
+          orderPaymentDetails: true,
+          orderPricing: true,
+          packageDetails: true,
+          pickupLocation: true,
+          shipment: true,
+          userAwbDetails: true,
+        },
+      });
+
+      return order;
     }),
 });
 

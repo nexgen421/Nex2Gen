@@ -316,92 +316,10 @@ const userOrderRouter = createTRPCRouter({
       });
 
       const totalOrderCount = await ctx.db.order.count({
-        where: {
-          userId: ctx.session.user.id,
-        },
-      });
-
-      return {
-        orders: orders.map((order) => ({
-          ...order,
-          userAwbDetails: {
-            ...order.userAwbDetails,
-            awbNumber: order.userAwbDetails?.awbNumber
-              ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
-              : undefined,
-          },
-        })),
-        totalOrderCount,
-      };
-    }),
-  getAllOrdersAdmin: protectedProcedure
-    .input(
-      z.object({
-        cursor: z.number().optional(),
-        limit: z.number().min(10).max(100).default(10),
-        awbNumber: z.string().optional(),
-        startDate: z.date().optional(),
-        endDate: z.date().optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const where: Prisma.OrderWhereInput = {
-        // userId: ctx.session.user.id,
-        ...(input.awbNumber && {
-          userAwbDetails: {
-            awbNumber: parseInt(input.awbNumber, 10),
-          },
-        }),
-        ...(input.startDate && {
-          orderDate: {
-            gte: input.startDate,
-          },
-        }),
-        ...(input.endDate && {
-          orderDate: {
-            ...(input.startDate ? { gte: input.startDate } : {}),
-            lte: input.endDate,
-          },
-        }),
-      };
-
-      const orders = await ctx.db.order.findMany({
-        where,
-        skip: (input.cursor ?? 0) * input.limit,
-        take: input.limit,
-        include: {
-          shipment: true,
-          userAwbDetails: true,
-          orderCustomerDetails: true,
-          user: {
-            select: {
-              name: true,
-              kycDetails: {
-                select: {
-                  id: true, 
-                  userId: true,
-                  // mobile:true
-                  // CompanyInfo:true
-                  companyInfo:true
-                },
-              }
-              // mobile:true
-            },
-            // include: {
-
-            // }
-          }
-          // orderPaymentDetails: true,
-        },
-        orderBy: {
-          orderDate: "desc",
-        },
-      });
-
-      const totalOrderCount = await ctx.db.order.count({
-        where: {
-          // userId: ctx.session.user.id,
-        },
+        where
+        // where: {
+        //   userId: ctx.session.user.id,
+        // },
       });
 
       return {

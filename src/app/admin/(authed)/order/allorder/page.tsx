@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, X } from "lucide-react";
+import PaginationBtn from "~/components/pagination";
 import {
   Table,
   TableBody,
@@ -203,7 +204,7 @@ const OrdersTable: React.FC = () => {
   );
   const [filters, setFilters] = useState<FilterOptions>({});
 
-  const { data, isLoading, error } = api.userOrder.getAllOrdersAdmin.useQuery({
+  const { data, isLoading, error } = api.adminOrder.getAllOrdersAdmin.useQuery({
     cursor: currentPageFromUrl,
     limit,
     ...filters,
@@ -321,7 +322,7 @@ const OrdersTable: React.FC = () => {
                       <Button
                         variant={"link"}
                         onClick={() => {
-                          router.push(`/orders/${order.orderId}`);
+                          router.push(`/admin/order/${order.orderId}`);
                         }}
                       >
                         #{order.orderId}
@@ -331,7 +332,7 @@ const OrdersTable: React.FC = () => {
                       {order.user?.name}
                     </TableCell>
                     <TableCell>
-                      
+
                       {order.user?.kycDetails?.companyInfo?.companyName}
                     </TableCell>
                     <TableCell className="">
@@ -378,7 +379,7 @@ const OrdersTable: React.FC = () => {
 
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-center">
-              <Pagination>
+              {/* <Pagination>
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
@@ -422,7 +423,13 @@ const OrdersTable: React.FC = () => {
                     />
                   </PaginationItem>
                 </PaginationContent>
-              </Pagination>
+              </Pagination> */}
+              <PaginationBtn
+                handleChange={handlePageChange}
+                totalPages={totalPages}
+                currentPage={currentPage}
+
+              />
             </div>
           )}
         </CardContent>

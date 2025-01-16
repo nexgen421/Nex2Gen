@@ -73,6 +73,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  mobile: string;
   image?: string | null;
   isApproved: boolean;
   isKycSubmitted: boolean;
@@ -122,7 +123,7 @@ const UserTable = ({ users, onApprove, onDelete }: UserTableProps) => {
           <TableHead className="text-xs">Name</TableHead>
           <TableHead className="text-xs">Status</TableHead>
           <TableHead className="text-xs">Email</TableHead>
-          {/* <TableHead className="text-xs">Mobile Number</TableHead> */}
+          <TableHead className="text-xs">Mobile Number</TableHead>
           <TableHead className="text-xs">Kyc Details</TableHead>
           <TableHead className="text-xs">Kyc Status</TableHead>
           <TableHead className="hidden text-xs md:table-cell">
@@ -158,7 +159,7 @@ const UserTable = ({ users, onApprove, onDelete }: UserTableProps) => {
               </Badge>
             </TableCell>
             <TableCell className="text-xs">{user.email}</TableCell>
-            {/* <TableCell className="text-xs">{user.mobile}</TableCell> */}
+            <TableCell className="text-xs">{user.mobile}</TableCell>
             <TableCell className="text-xs">
               <KycCard userId={user.id} name={user.name} email={user.email} />
             </TableCell>

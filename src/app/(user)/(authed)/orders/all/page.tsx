@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Input } from "~/components/ui/input";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
+import  PaginationBtn  from "~/components/pagination";
 import {
   Popover,
   PopoverContent,
@@ -369,7 +370,7 @@ const OrdersTable: React.FC = () => {
 
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-center">
-              <Pagination>
+              {/* <Pagination>
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
@@ -413,7 +414,13 @@ const OrdersTable: React.FC = () => {
                     />
                   </PaginationItem>
                 </PaginationContent>
-              </Pagination>
+              </Pagination> */}
+              <PaginationBtn
+                handleChange={handlePageChange}
+                totalPages={totalPages}
+                currentPage={currentPage}
+
+              />
             </div>
           )}
         </CardContent>

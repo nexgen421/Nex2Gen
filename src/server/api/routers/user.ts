@@ -153,7 +153,7 @@ const userRouter = createTRPCRouter({
           name: true,
           image: true,
           email: true,
-          // mobile: true,
+          mobile: true,
           isApproved: true,
           isKycSubmitted: true,
           createdAt: true,

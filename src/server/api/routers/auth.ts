@@ -45,6 +45,7 @@ const RegisterValidator = z.object({
   lastName: z.string(),
   email: z.string().email(),
   password: z.string(),
+  mobile: z.string(),
   confirmPassword: z.string(),
   captchaToken: z.string(),
 });
@@ -64,6 +65,7 @@ const authRouter = createTRPCRouter({
         password,
         confirmPassword,
         email,
+        mobile,
         captchaToken,
       } = input;
 
@@ -106,6 +108,7 @@ const authRouter = createTRPCRouter({
           email: email,
           password: hashedPassword,
           name: `${firstName} ${lastName}`,
+          mobile:mobile,
           userVerificationDetails: {
             create: {
               token: randomUUID().toString(),
