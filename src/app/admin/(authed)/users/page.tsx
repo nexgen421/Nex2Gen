@@ -159,7 +159,7 @@ const UserTable = ({ users, onApprove, onDelete }: UserTableProps) => {
               </Badge>
             </TableCell>
             <TableCell className="text-xs">{user.email}</TableCell>
-            <TableCell className="text-xs">{user.mobile}</TableCell>
+            <TableCell className="text-xs">{user.mobile ? user.mobile : user.kycDetails?.companyInfo?.companyContactNumber}</TableCell>
             <TableCell className="text-xs">
               <KycCard userId={user.id} name={user.name} email={user.email} />
             </TableCell>

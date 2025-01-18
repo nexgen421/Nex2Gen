@@ -71,6 +71,9 @@ const PaymentsHistoryPage = () => {
     return <Loader2 className="animate-spin duration-500" />;
   }
 
+  console.log(data, "PAYMENT HISTORY")
+
+
   return (
     <Card>
       <CardHeader>
@@ -92,7 +95,7 @@ const PaymentsHistoryPage = () => {
           </TableHeader>
 
           <TableBody>
-            {data?.map((payment) => {
+            {data?.approvedRequests?.map((payment) => {
               return (
                 <TableRow key={payment.id}>
                   <TableCell>
@@ -116,7 +119,7 @@ const PaymentsHistoryPage = () => {
       <CardFooter>
         <PagePagination
           pageUrl={pathname}
-          totalItems={data?.length ?? 0}
+          totalItems={data?.walletCount ?? 0}
           itemsPerPage={10}
         />
       </CardFooter>

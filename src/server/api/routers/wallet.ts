@@ -123,8 +123,8 @@ const walletRouter = createTRPCRouter({
         take: 10,
         skip: (input.cursor ?? 0) * 10,
       });
-
-      return approvedRequests;
+      const walletCount = await ctx.db.walletRequest.count({ where:{isApproved: true}});
+      return {approvedRequests,walletCount};
     }),
   createWalletRequest: protectedProcedure
     .input(CreateWalletRequestValidator)

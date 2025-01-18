@@ -69,14 +69,15 @@ const Page = ({ params }: { params: { orderId: string } }) => {
     }
     return "";
   };
-
-  const handleOrderApprove = async (data: TOrderApprovalForm) => {
+  // debugger
+  // console.log(data);
+  const handleOrderApprove = async (obj: TOrderApprovalForm) => {
     if (courierProvider === "") {
       toast.error("Please select a courier provider");
       return;
     }
     await mutateAsync({
-      awbNumber: data.awbNumber,
+      awbNumber: obj.awbNumber,
       courierProvider: courierProvider as
         | "delhivery"
         | "ecom-express"
@@ -87,7 +88,7 @@ const Page = ({ params }: { params: { orderId: string } }) => {
     });
 
     toast.success("Order Approved Successfully");
-    router.push("/admin/order/requests");
+    router.push(`/admin/order/requests/order-request/${data?.pickupLocation?.userId}`);
   };
 
   if (isLoading) {
@@ -101,7 +102,8 @@ const Page = ({ params }: { params: { orderId: string } }) => {
   const rejectOrderHandler = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     await rejectOrder({ orderId: orderId });
-    router.push("/admin/order/requests");
+    // router.push("/admin/order/requests");
+    router.push(`/admin/order/requests/order-request/${data?.pickupLocation?.userId}`);
     toast.success("Order Rejected Successfully");
   };
 

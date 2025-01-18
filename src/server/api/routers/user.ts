@@ -157,6 +157,11 @@ const userRouter = createTRPCRouter({
           isApproved: true,
           isKycSubmitted: true,
           createdAt: true,
+          kycDetails:{
+            select:{
+              companyInfo:true
+            }
+          }
         },
         orderBy: {
           createdAt: "desc",

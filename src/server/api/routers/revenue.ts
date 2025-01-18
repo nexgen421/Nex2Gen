@@ -62,8 +62,14 @@ const revenueRouter = createTRPCRouter({
   getYearWiseRevenue: ultraProtectedProcedure
     .input(GetYearWiseRevenueValidator)
     .query(async ({ ctx, input }) => {
-      
 
+      const yesterdayStart = new Date();
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      yesterdayStart.setHours(0, 0, 0, 0);
+
+      const yesterdayEnd = new Date();
+      yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
+      yesterdayEnd.setHours(23, 59, 59, 999);
       const revenue = await ctx.db.transaction.aggregate({
         _sum: {
           amount: true,
@@ -71,10 +77,10 @@ const revenueRouter = createTRPCRouter({
 
         where: {
           type: "DEBIT",
-          // createdAt: {
-          //   gte: new Date(firstDay),
-          //   lt: new Date(lastDay),
-          // },
+          createdAt: {
+            gte: yesterdayStart,
+            lt: yesterdayEnd,
+          },
         },
       });
       const totalRevenue = revenue._sum.amount !== null ? parseFloat(revenue?._sum.amount.toString()) : 0.0;

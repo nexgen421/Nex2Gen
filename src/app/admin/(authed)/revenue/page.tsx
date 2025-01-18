@@ -20,9 +20,9 @@ const RevenueDashboard = () => {
     const { data, isLoading: isLoadingAll } = api.revenue.getYearWiseRevenue.useQuery({
       year : 2024
     })
-     
-    console.log(data,"DATA CEHECK TYOTAL REVUENE")
 
+    console.log(data,"DATA IN TOTAL REVENUIE ")
+     
   return (
     <>
 
@@ -33,7 +33,7 @@ const RevenueDashboard = () => {
           </div>
           <div className="flex h-full flex-col items-start justify-center gap-2" >
             <h4 className="text-xl font-medium">
-              {/* Total Revenue: {data?.amount} */}
+              Total Revenue: {data}
             </h4>
 
           </div>

@@ -175,7 +175,6 @@ export const UserOrderDashboardTable = () => {
   const router = useRouter();
 
 
-
   const currentTab =
     (params.get("tab") as "approved" | "all" | "kyc" | "pending") ?? "all";
   const currentPage = +(params.get("page") ?? 0);
@@ -186,12 +185,14 @@ export const UserOrderDashboardTable = () => {
       filter: currentTab,
       search: '', // Use debounced value here
     });
-
   const { data: userProfileData, isLoading }: any = api.user.fetchAllUserProfileRevenue.useQuery({
     cursor: currentPage,
     filter: currentTab,
     search: '',
   });
+
+  useEffect(()=>{},[userProfileData])
+
 
   return (
 
@@ -308,15 +309,16 @@ export const UserOrderDashboardTable = () => {
           </TableRow>
         ))} */}
 
-          <UserTable
+          {userProfileData && <UserTable
             users={userProfileData?.users}
             onApprove={() => { }}
             onDelete={() => { }}
-          />
+          />}
         </TableBody>
         <TableFooter>
           <TableRow>
             <TableCell colSpan={5} className="bg-white">
+
               <PagePagination
                 pageUrl={pathname}
                 totalItems={userProfileData?.usersCount ?? 0}
