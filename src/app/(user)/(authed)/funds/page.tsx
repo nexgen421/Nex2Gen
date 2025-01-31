@@ -25,7 +25,7 @@ import { api } from "~/trpc/react";
 import Loading from "~/app/loading";
 import { useRouter } from "next/navigation";
 import { Heading } from "~/components/ui/heading";
-
+import PaginationBtn from "~/components/pagination";
 enum Months {
   all = "All",
   January = "January",
@@ -47,23 +47,37 @@ const FundsPage = () => {
   const [month, setMonth] = useState<Months>(Months.all);
   const [year, setYear] = useState(moment().format("YYYY"));
   const router = useRouter();
-
+  const [limit, setLimit] = useState<number>(10);
+  const currentPageFromUrl = +(params.get("page") ?? "0");
+  const [currentPage, setCurrentPage] = useState<number>(
+    currentPageFromUrl + 1,
+  );
   const { data, isLoading } = api.fund.getFundHistory.useQuery({
-    cursor: +(params.get("page") ?? 0),
+    cursor: currentPageFromUrl,
+    limit,
     month: month,
     year: +year,
   });
 
   if (isLoading) return <Loading />;
 
-  const filteredData = data?.filter((transaction) => {
+  const filteredData = data?.transactions?.filter((transaction) => {
     const transactionDate = moment(transaction.createdAt);
     return (
       (month === Months.all || transactionDate.format("MMMM") === month) &&
       transactionDate.format("YYYY") === year
     );
   });
-
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", String(page - 1));
+    window.history.pushState({}, "", url);
+  };
+  if (!data?.transactionsCount) {
+    return null;
+  }
+  const totalPages = Math.ceil(data?.transactionsCount / limit);
   const years = [
     "2024",
     "2025",
@@ -176,6 +190,17 @@ const FundsPage = () => {
               ))}
             </TableBody>
           </Table>
+         
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center">
+              <PaginationBtn
+                handleChange={handlePageChange}
+                totalPages={totalPages}
+                currentPage={currentPage}
+
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

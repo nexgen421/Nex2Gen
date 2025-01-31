@@ -3,7 +3,8 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 
 const GetFundHistoryValidator = z.object({
-  cursor: z.number(),
+  cursor: z.number().optional(),
+  limit: z.number().min(10).max(100).default(10),
   year: z.number(),
   month: z.enum([
     "All",
@@ -75,8 +76,8 @@ const fundRouter = createTRPCRouter({
         select: {
           transactions: {
             where: whereClause,
-            take: 50,
-            skip: cursor * 50,
+            skip: (input.cursor ?? 0) * input.limit,
+            take: input.limit,
             orderBy: {
               createdAt: "desc",
             },
@@ -104,7 +105,9 @@ const fundRouter = createTRPCRouter({
           },
         },
       });
-
+      const transactionsCount = await ctx.db.transaction.count({
+        where: whereClause,
+      });
       const transactions = resp?.transactions.map((transaction) => ({
         ...transaction,
         orderPaymentDetails: {
@@ -120,7 +123,7 @@ const fundRouter = createTRPCRouter({
         },
       }));
 
-      return transactions;
+      return {transactions:transactions,transactionsCount:transactionsCount};
     }),
 });
 
