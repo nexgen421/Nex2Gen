@@ -9,22 +9,30 @@ import { type TRegisterValidator } from "~/types/validators/Auth";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
+// import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { TRPCClientError } from "@trpc/client";
-
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 const RegisterForm = () => {
   const router = useRouter();
-  const [captchaToken, setCaptchaToken] = useState<string>("");
-  const { mutateAsync: submitRegisterRequest, status } =
+  // const [captchaToken, setCaptchaToken] = useState<string>("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const { mutateAsync: submitRegisterRequest} =
     api.auth.register.useMutation({
       onError(error) {
         setError("root", error);
       },
     });
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
+  };
   const handleRegister = async (data: TRegisterValidator) => {
     try {
-      toast.promise(submitRegisterRequest({ ...data, captchaToken }), {
+      toast.promise(submitRegisterRequest({ ...data}), {
         richColors: true,
         success: "Check Your Email for Verification Link!",
         error(data) {
@@ -108,16 +116,41 @@ const RegisterForm = () => {
             {...register("mobile")}
           />
         </LabelInputContainer>
-        <LabelInputContainer className="mb-4">
+        {/* <LabelInputContainer className="mb-4">
           <Label htmlFor="password">Password</Label>
+          <span
+            onClick={togglePasswordVisibility}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+          >
+            {passwordVisible ? <FaEyeSlash /> : <FaEye />}
+          </span>
           <Input
             id="password"
             placeholder="••••••••"
             type="password"
             {...register("password")}
           />
+        </LabelInputContainer> */}
+        <LabelInputContainer className="mb-4 relative">
+          <Label htmlFor="password">Password</Label>
+          <div className="relative">
+            <Input
+              id="password"
+              placeholder="••••••••"
+              type={passwordVisible ? "text" : "password"}
+              {...register("password")}
+              className="pr-10" // Adds padding to the right for the icon
+            />
+            <span
+              onClick={togglePasswordVisibility}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            >
+              {passwordVisible ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
         </LabelInputContainer>
-        <LabelInputContainer className="mb-8">
+
+        {/* <LabelInputContainer className="mb-8">
           <Label htmlFor="confirmpassword">Confirm Password</Label>
           <Input
             id="confirmpassword"
@@ -125,20 +158,37 @@ const RegisterForm = () => {
             type="password"
             {...register("confirmPassword")}
           />
+        </LabelInputContainer> */}
+        <LabelInputContainer className="mb-8 relative">
+          <Label htmlFor="confirmpassword">Confirm Password</Label>
+          <div className="relative">
+            <Input
+              id="confirmpassword"
+              placeholder="••••••••"
+              type={confirmPasswordVisible ? "text" : "password"}
+              {...register("confirmPassword")}
+              className="pr-10" // Adds padding to the right for the icon
+            />
+            <span
+              onClick={toggleConfirmPasswordVisibility}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            >
+              {confirmPasswordVisible ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
         </LabelInputContainer>
-
-        <div className="mb-4 flex w-full items-center justify-center">
+        {/* <div className="mb-4 flex w-full items-center justify-center">
           <HCaptcha
             theme={"light"}
             sitekey="46e2b756-f9fa-4d70-a0a6-14b6cf0812ee"
             onVerify={(token) => setCaptchaToken(token)}
           />
-        </div>
+        </div> */}
 
         <Button
           className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
           type="submit"
-          disabled={status === "pending" || !captchaToken}
+          // disabled={status === "pending" || !captchaToken}
         >
           Sign up &rarr;
           <BottomGradient />

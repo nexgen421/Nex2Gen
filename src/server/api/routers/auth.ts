@@ -47,7 +47,7 @@ const RegisterValidator = z.object({
   password: z.string(),
   mobile: z.string(),
   confirmPassword: z.string(),
-  captchaToken: z.string(),
+  // captchaToken: z.string(),
 });
 
 const VerifyTokenValidator = z.object({
@@ -66,19 +66,19 @@ const authRouter = createTRPCRouter({
         confirmPassword,
         email,
         mobile,
-        captchaToken,
+        // captchaToken,
       } = input;
 
       // verify captcha token
 
-      const captchaResponse = await verify(env.HCAPTCHA_SECRET, captchaToken);
+      // const captchaResponse = await verify(env.HCAPTCHA_SECRET, captchaToken);
 
-      if (!captchaResponse.success) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Captcha Verification Failed!",
-        });
-      }
+      // if (!captchaResponse.success) {
+      //   throw new TRPCError({
+      //     code: "FORBIDDEN",
+      //     message: "Captcha Verification Failed!",
+      //   });
+      // }
 
       // first check if user with that email is already present
       const user = await ctx.db.user.findFirst({

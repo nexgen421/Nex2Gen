@@ -16,7 +16,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
-
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 interface TLoginForm {
   email: string;
   password: string;
@@ -25,6 +25,7 @@ interface TLoginForm {
 const LoginForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const {
     register,
     formState: { errors },
@@ -51,7 +52,9 @@ const LoginForm = () => {
       setIsLoading(false);
     }
   };
-
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
   return (
     <div className="container flex h-screen flex-col items-center">
       {/* Background image with subtle opacity */}
@@ -92,9 +95,14 @@ const LoginForm = () => {
                 <p className="text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
+                <span
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
+                </span>
+                {passwordVisible ? <FaEyeSlash /> : <FaEye />}
                 <Link
                   href="/forgot-password"
                   className="text-sm text-primary hover:underline"
@@ -118,7 +126,40 @@ const LoginForm = () => {
                   {errors.password.message}
                 </p>
               )}
+            </div> */}
+            <div className="space-y-2">
+              <div className="relative flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <span
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                >
+                  {passwordVisible ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+              <Input
+                id="password"
+                type={passwordVisible ? "text" : "password"} // Toggle password visibility here
+                {...register("password", {
+                  required: "Password is required",
+                  maxLength: {
+                    value: 30,
+                    message: "Password must be less than 30 characters",
+                  },
+                })}
+              />
+              {errors.password && (
+                <p className="text-sm text-red-600">{errors.password.message}</p>
+              )}
+
+              {/* Uncomment and place your Forgot password link here */}
+              <div className="flex justify-end">
+                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
