@@ -27,6 +27,36 @@ type ShipmentStatus =
   | "INFORECEIVED"  // Add the missing status
   | "OTHER_STATUS"; // Add other statuses as needed
 
+type newShipmentStatus =
+  | "Pending"
+  | "DEL"
+  | "INT"
+  | "UND"
+  | "RTO"
+  | "RTD"
+  | "CAN"
+  | "SCH"
+  | "PKP"
+  | "PKF"
+  | "PCAN"
+  | "ONH"
+  | "OOD"
+  | "NWI"
+  | "DNB"
+  | "NFI"
+  | "ODA"
+  | "OTH"
+  | "SMD"
+  | "STATUS_22"
+  | "STATUS_23"
+  | "STATUS_24"
+  | "STATUS_25"
+  | "CRTA"
+  | "DEX"
+  | "DRE"
+  | "PNR"
+  | "RAD"
+
 interface Shipment {
   id: string;
   dbOrderId: string;
@@ -35,7 +65,8 @@ interface Shipment {
   trackingId: string;
   createdAt: Date;
   updatedAt: Date | null;
-  status: ShipmentStatus;  // Ensure the ShipmentStatus type is correct
+  // status: ShipmentStatus;  // Ensure the ShipmentStatus type is correct
+  newStatus: newShipmentStatus;  // Ensure the ShipmentStatus type is correct
   subStatus: string | null;
   latestEvent: string | null;
 }

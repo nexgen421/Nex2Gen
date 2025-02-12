@@ -391,6 +391,36 @@ enum ShipmentStatus {
   PENDING
 }
 
+enum newShipmentStatus {
+Pending
+DEL
+INT
+UND
+RTO
+RTD
+CAN
+SCH
+PKP
+PKF
+PCAN
+ONH
+OOD
+NWI
+DNB
+NFI
+ODA
+OTH
+SMD
+STATUS_22
+STATUS_23
+STATUS_24
+STATUS_25
+CRTA
+DEX
+DRE
+PNR
+RAD
+}
 model OrderAddressDetails {
   id             String @id @default(uuid())
   houseNumber    String
@@ -468,6 +498,7 @@ model Shipment {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime?      @updatedAt
   status          ShipmentStatus
+  newStatus       newShipmentStatus @default(Pending)
   subStatus       String?
   latestEvent     String?
 

@@ -24,6 +24,7 @@ import SelectCourierProvider from "~/components/courier-provider/SelectCourierPr
 interface TOrderApprovalForm {
   awbNumber: string;
   courierProvider: string;
+  carrierId: string;
 }
 
 const Page = ({ params }: { params: { orderId: string } }) => {
@@ -44,6 +45,7 @@ const Page = ({ params }: { params: { orderId: string } }) => {
   const awbNumber = watch("awbNumber");
 
   useEffect(() => {
+    // debugger
     if (awbNumber) {
       const detectedCourier = detectCourierProvider(awbNumber);
       if (detectedCourier) {
@@ -69,26 +71,30 @@ const Page = ({ params }: { params: { orderId: string } }) => {
     }
     return "";
   };
-  // debugger
-  // console.log(data);
-  const handleOrderApprove = async (obj: TOrderApprovalForm) => {
+
+  const handleOrderApprove = async (data) => {
+    // debugger
+    
     if (courierProvider === "") {
       toast.error("Please select a courier provider");
       return;
     }
+    let {key,value}=JSON.parse(courierProvider)
     await mutateAsync({
-      awbNumber: obj.awbNumber,
-      courierProvider: courierProvider as
-        | "delhivery"
-        | "ecom-express"
-        | "shadowfax"
-        | "valmo"
-        | "xpressbees",
+      awbNumber: data.awbNumber,
+      // courierProvider: courierProvider as
+      //   | "delhivery"
+      //   | "ecom-express"
+      //   | "shadowfax"
+      //   | "valmo"
+      //   | "xpressbees",
+      courierProvider:key,
+      carrierId:value,
       dbOrderId: orderId,
     });
 
     toast.success("Order Approved Successfully");
-    router.push(`/admin/order/requests/order-request/${data?.pickupLocation?.userId}`);
+    router.push("/admin/order/requests");
   };
 
   if (isLoading) {
@@ -102,8 +108,7 @@ const Page = ({ params }: { params: { orderId: string } }) => {
   const rejectOrderHandler = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     await rejectOrder({ orderId: orderId });
-    // router.push("/admin/order/requests");
-    router.push(`/admin/order/requests/order-request/${data?.pickupLocation?.userId}`);
+    router.push("/admin/order/requests");
     toast.success("Order Rejected Successfully");
   };
 
