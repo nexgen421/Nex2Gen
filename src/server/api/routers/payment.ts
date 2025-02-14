@@ -22,7 +22,7 @@ const paymentRouter = createTRPCRouter({
       formData.append('user_token', '1e718255af0d6dc004e4e2d860a90c6f');
       formData.append('amount', input.amount);
       formData.append('order_id', input.order_id);
-      formData.append('redirect_url', 'https://nexgencourierservice.in/dashboard');
+      formData.append('redirect_url', 'https://https://nex2-gen-cefs.vercel.app/dashboard');
       formData.append('remark1', ctx.session?.user.email);
       formData.append('remark2', ctx.session?.user.name);
 
