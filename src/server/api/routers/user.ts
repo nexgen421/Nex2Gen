@@ -254,11 +254,11 @@ const userRouter = createTRPCRouter({
           },
           data: {
             currentBalance: {
-              increment: response.data.result.amount,
+              increment: parseFloat(response.data.result.amount),
             },
             transactions: {
               create: {
-                amount: response.data.result.amount,
+                amount: parseFloat(response.data.result.amount),
                 type: "CREDIT",
                 status: "SUCCESS",
                 reason: "Funds added to wallet",
