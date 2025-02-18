@@ -21,7 +21,7 @@ interface EmailVerificationProps {
 
 const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "https://nexgencourierservice.in";
+  : "https://www.nexgencourierservice.in";
 
 export const LinkVerification = ({
   userFirstName,
@@ -96,7 +96,7 @@ export const LinkVerification = ({
           </Section>
 
           <Text style={footer}>
-            © 2024 | Kishan Kumar Sah | nexgencourierservice.in
+            © 2024 | Kishan Kumar Sah | www.nexgencourierservice.in
           </Text>
         </Container>
       </Body>

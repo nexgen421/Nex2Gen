@@ -11,7 +11,7 @@ import Footer from "~/components/layout/Footer";
 const ContactPage = () => {
   const contactInfo = [
     { icon: Phone, text: "Call us at: +91 11 6965 3981 " },
-    { icon: Globe, text: "Visit: nexgencourierservice.in" },
+    { icon: Globe, text: "Visit: www.nexgencourierservice.in" },
     {
       icon: MessageCircle,
       text: "Message us directly on WhatsApp to book now!",

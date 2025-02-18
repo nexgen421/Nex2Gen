@@ -5,7 +5,7 @@ import LinkVerification from "./email-templates/LinkVerification";
 
 const baseUrl = process.env.VERCEL_URL
   ? process.env.VERCEL_URL
-  : `https://nexgencourierservice.in`;
+  : `https://www.nexgencourierservice.in`;
 
 export const sendVerificationEmail = async (
   to: string,
