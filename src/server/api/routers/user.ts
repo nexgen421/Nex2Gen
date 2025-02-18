@@ -112,7 +112,117 @@ const userRouter = createTRPCRouter({
           break;
       }
     });
+    const unapprovedRequests = await ctx.db.walletRequest.findMany({
+      select: {
+        id: true,
+        amount: true,
+        referenceNumber: true,
+        createdAt: true,
+        wallet: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                kycDetails: {
+                  select: {
+                    companyInfo: {
+                      select: {
+                        companyName: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      where: {
+        isApproved: false,
+        wallet: {
+          userId: ctx.session.user.id,  // Search for wallet by userId
+        },
+      },
+    });
 
+    // for (let i = 0; i < unapprovedRequests.length; i++) {
+    for (const data of unapprovedRequests) {
+      const obj = {
+        "user_token": "1e718255af0d6dc004e4e2d860a90c6f", "order_id": data.referenceNumber
+      }
+      // try {
+      const response = await axios.post('https://pay.imb.org.in/api/check-order-status', obj, {});
+      const walletRequest = await ctx.db.walletRequest.findFirst({
+        where: {
+          referenceNumber: data.referenceNumber,
+        },
+      });
+
+      if (!walletRequest) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Wallet request not found",
+        });
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (response?.data?.status == 'ERROR') {
+        await ctx.db.walletRequest.update({
+          where: {
+            id: walletRequest.id,
+          },
+          data: {
+            isApproved: true,
+            status: response?.data?.status
+          },
+        });
+        continue;
+      }
+
+      const wallet = await ctx.db.wallet.findUnique({
+        where: {
+          id: walletRequest.walletId,
+        },
+      });
+
+      if (!wallet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Wallet not found" });
+      }
+      if (response.data.result.txnStatus == 'COMPLETED') {
+        await ctx.db.wallet.update({
+          where: {
+            id: wallet.id,
+          },
+          data: {
+            currentBalance: {
+              increment: parseFloat(response.data.result.amount),
+            },
+            transactions: {
+              create: {
+                amount: parseFloat(response.data.result.amount),
+                type: "CREDIT",
+                status: "SUCCESS",
+                reason: "Funds added to wallet",
+                walletReferenceId: response?.data?.referenceNumber
+              },
+            },
+          },
+        });
+      }
+      await ctx.db.walletRequest.update({
+        where: {
+          id: walletRequest.id,
+        },
+        data: {
+          isApproved: true,
+          status: response.data.result.txnStatus
+        },
+      });
+      // } catch (err) {
+      //   console.log(err)
+
+      // }
+
+    }
     return {
       wallet: wallet?.currentBalance ?? 0,
       shipmentCount,
@@ -157,9 +267,9 @@ const userRouter = createTRPCRouter({
           isApproved: true,
           isKycSubmitted: true,
           createdAt: true,
-          kycDetails:{
-            select:{
-              companyInfo:true
+          kycDetails: {
+            select: {
+              companyInfo: true
             }
           }
         },
@@ -206,12 +316,12 @@ const userRouter = createTRPCRouter({
     });
 
     // for (let i = 0; i < unapprovedRequests.length; i++) {
-    for(const data of unapprovedRequests){
+    for (const data of unapprovedRequests) {
       const obj = {
         "user_token": "1e718255af0d6dc004e4e2d860a90c6f", "order_id": data.referenceNumber
       }
       // try {
-      const response  = await axios.post('https://pay.imb.org.in/api/check-order-status', obj, {});
+      const response = await axios.post('https://pay.imb.org.in/api/check-order-status', obj, {});
       const walletRequest = await ctx.db.walletRequest.findFirst({
         where: {
           referenceNumber: data.referenceNumber,
