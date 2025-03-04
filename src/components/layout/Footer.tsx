@@ -151,7 +151,7 @@ export default function Footer() {
 
         <div className="mt-16 border-t border-gray-300 pt-8 dark:border-gray-700">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} Nex Gen Courier Service. All
+            &copy; {new Date().getFullYear()} Kishan Kumar Sah. All
             rights reserved.
           </p>
         </div>

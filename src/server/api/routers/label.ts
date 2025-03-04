@@ -17,7 +17,7 @@ const GetUserLabelByLrValidator = z.object({
 });
 
 const labelRouter = createTRPCRouter({
-  getLabelByOrderId: protectedProcedure
+  getLabelByOrderId: publicProcedure
     .input(GetLabelByOrderIdValidator)
     .mutation(async ({ ctx, input }) => {
       // Get company name first

@@ -45,10 +45,9 @@ const StatusObject = ({
 
 const page = () => {
   // debugger
-  const { data, isLoading } = api.user.getDashboardData.useQuery();
   api.user.paymentWebhook.useQuery();
-  // console.log(obj);
-
+  const { data, isLoading } = api.user.getDashboardData.useQuery();
+  console.log("hello")
   if (isLoading) {
     return <Loading />;
   }
