@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Input } from "~/components/ui/input";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
+import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
@@ -114,7 +115,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onFilterChange }) => {
   const [awbNumber, setAwbNumber] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate);
-
+  
   const handleFilter = () => {
     onFilterChange({
       awbNumber: awbNumber ?? undefined,
@@ -209,7 +210,15 @@ const OrdersTable: React.FC = () => {
     limit,
     ...filters,
   });
-
+  const { mutateAsync: createWalletRequest, isPending } = api.wallet.createWalletRequest.useMutation(
+    {
+      onError(error) {
+        toast.error(error.message);
+      },
+    },
+  );
+const { mutateAsync: approveRequest } =
+    api.wallet.approveWalletRequest.useMutation();
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -265,7 +274,20 @@ const OrdersTable: React.FC = () => {
       maximumFractionDigits: 0,
     }).format(amount);
   };
+  
+  const refundAmount = async (e: React.FormEvent<HTMLButtonElement>) => {
+    // e.preventDefault();
+    try {
+      const walletRequestId = await createWalletRequest({ fundInput: e.orderValue});
+      await approveRequest({ walletRequestId: walletRequestId });
+          toast.success("Payment refund successfully!");
+          router.refresh();
+      // console.log(walletRequestId)
 
+    } catch (error) {
+      // toast.error(JSON.stringify(error));
+    }
+  };
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     const url = new URL(window.location.href);
@@ -313,6 +335,7 @@ const OrdersTable: React.FC = () => {
                   <TableHead className="w-24">AWB Number</TableHead>
                   <TableHead className="w-32">Courier Provider</TableHead>
                   <TableHead className="w-32">Status</TableHead>
+                  <TableHead className="w-32">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -370,6 +393,9 @@ const OrdersTable: React.FC = () => {
                             .join(" ")
                             .toLowerCase()}
                       </div>
+                    </TableCell>
+                    <TableCell className="font-bold capitalize">
+                      <Button onClick={() => refundAmount(order)}>Refund Amount</Button>
                     </TableCell>
                   </TableRow>
                 ))}

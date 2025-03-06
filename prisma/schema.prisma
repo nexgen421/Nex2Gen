@@ -100,6 +100,7 @@ model Order {
   orderAdressDetails   OrderAddressDetails?
   orderCustomerDetails OrderCustomerDetails?
   packageDetails       PackageDetails?
+  refundAmount         Boolean @default(false)
 
   @@index([userId])
   @@index([orderId])

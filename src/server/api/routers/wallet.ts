@@ -21,7 +21,6 @@ const GetAllWalletRequestsValidator = z.object({
 
 const CreateWalletRequestValidator = z.object({
   fundInput: z.number(),
-  referenceNumber: z.string(),
 });
 
 const ApproveWalletRequestValidator = z.object({
@@ -141,11 +140,11 @@ const walletRouter = createTRPCRouter({
           message: "No wallet associated with given user",
         });
       }
-
-      await ctx.db.walletRequest.create({
+      let randomFiveDigitNumber = Math.floor(Math.random() * 90000) + 10000;
+      const walletRequestId  =await ctx.db.walletRequest.create({
         data: {
           amount: input.fundInput,
-          referenceNumber: input.referenceNumber,
+          referenceNumber: `ref_${randomFiveDigitNumber}`,
           wallet: {
             connect: {
               id: wallet.id,
@@ -154,7 +153,7 @@ const walletRouter = createTRPCRouter({
         },
       });
 
-      return true;
+      return walletRequestId;
     }),
   approveWalletRequest: ultraProtectedProcedure
     .input(ApproveWalletRequestValidator)
