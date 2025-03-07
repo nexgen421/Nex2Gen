@@ -262,7 +262,7 @@ const userRouter = createTRPCRouter({
                 type: "CREDIT",
                 status: "SUCCESS",
                 reason: "Funds added to wallet",
-                walletReferenceId: response?.data?.referenceNumber
+                walletReferenceId: response?.data?.result.utr
               },
             },
           },
@@ -277,14 +277,7 @@ const userRouter = createTRPCRouter({
           status: response.data.result.txnStatus
         },
       });
-      // } catch (err) {
-      //   console.log(err)
-
-      // }
-
     }
-
-    // console.log(response)
     return { data: "success" }
   }),
   approve: ultraProtectedProcedure
