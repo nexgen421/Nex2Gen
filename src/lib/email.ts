@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { env } from "~/env";
 import LinkVerification from "./email-templates/LinkVerification";
 
+
 const baseUrl = process.env.VERCEL_URL
   ? process.env.VERCEL_URL
   : `https://www.nexgencourierservice.in`;
