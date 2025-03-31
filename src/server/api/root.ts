@@ -25,6 +25,7 @@ import {
   riderRouter,
   paymentRouter
 } from "./routers";
+import { webhookRouter } from "./routers/webhook";
 
 export const appRouter = createTRPCRouter({
   tracking: trackingRouter,
@@ -51,7 +52,8 @@ export const appRouter = createTRPCRouter({
   promotions: promotionsRouter,
   adminSettings: adminSettingsRouter,
   rider: riderRouter,
-  payment:paymentRouter
+  payment:paymentRouter,
+  webhook:webhookRouter
 });
 
 export type AppRouter = typeof appRouter;

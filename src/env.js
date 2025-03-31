@@ -42,6 +42,8 @@ export const env = createEnv({
     WEBHOOK_SECRET: z.string(),
     ENCRYPTION_KEY: z.string(),
     HCAPTCHA_SECRET: z.string(),
+    SHIPWAY_USERNAME: z.string(),
+    SHIPWAY_PASSWORD: z.string(),
   },
 
   /**
@@ -84,6 +86,8 @@ export const env = createEnv({
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     HCAPTCHA_SECRET: process.env.HCAPTCHA_SECRET,
+    SHIPWAY_USERNAME: process.env.SHIPWAY_USERNAME,
+    SHIPWAY_PASSWORD: process.env.SHIPWAY_PASSWORD,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

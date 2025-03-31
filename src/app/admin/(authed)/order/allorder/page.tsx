@@ -316,63 +316,61 @@ const OrdersTable: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.orders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell>
-                      <Button
-                        variant={"link"}
-                        onClick={() => {
-                          router.push(`/admin/order/${order.orderId}`);
-                        }}
-                      >
-                        #{order.orderId}
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      {order.user?.name}
-                    </TableCell>
-                    <TableCell>
+                {data.orders.map((order) => {
+                  if (order) {
+                    return (
+                      <TableRow key={order?.id}>
+                        <TableCell>
+                          <Button
+                            variant={"link"}
+                            onClick={() => {
+                              router.push(`/admin/order/${order?.orderId}`);
+                            }}
+                          >
+                            #{order?.orderId}
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          {order?.user?.name}
+                        </TableCell>
+                        <TableCell>
 
-                      {order.user?.kycDetails?.companyInfo?.companyName}
-                    </TableCell>
-                    <TableCell className="">
-                      <div className="flex flex-col">
-                        <span>
-                          {moment(order.orderDate).format("MMM DD, YYYY")}
-                        </span>
-                        <span>{moment(order.orderDate).format("hh:mm A")}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {order.orderCustomerDetails?.customerName} (
-                      {order.orderCustomerDetails?.customerMobile})
-                    </TableCell>
-                    <TableCell>{order.userAwbDetails?.awbNumber}</TableCell>
-                    <TableCell>
-                      {order.shipment?.awbNumber
-                        ? order.shipment.awbNumber
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="font-bold capitalize">
-                      {order.shipment?.courierProvider
-                        ? order.shipment.courierProvider
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <div
-                        className={`${getStatusColor(order.status as OrderStatus | ShipmentStatus)} mx-auto w-fit rounded-full px-3 py-[2px] text-xs font-semibold capitalize text-white`}
-                      >
-                        {order.status !== "READY_TO_SHIP" &&
-                          order.status.split("_").join(" ").toLowerCase()}
-                        {order.status === "READY_TO_SHIP" &&
-                          order.shipment?.status
-                            .split("_")
-                            .join(" ")
-                            .toLowerCase()}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {order?.user?.kycDetails?.companyInfo?.companyName}
+                        </TableCell>
+                        <TableCell className="">
+                          <div className="flex flex-col">
+                            <span>
+                              {moment(order?.orderDate).format("MMM DD, YYYY")}
+                            </span>
+                            <span>{moment(order?.orderDate).format("hh:mm A")}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {order?.orderCustomerDetails?.customerName} (
+                          {order?.orderCustomerDetails?.customerMobile})
+                        </TableCell>
+                        <TableCell>{order?.userAwbDetails?.awbNumber}</TableCell>
+                        <TableCell>
+                          {order?.shipment?.awbNumber
+                            ? order?.shipment.awbNumber
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="font-bold capitalize">
+                          {order?.carrier
+                            ? order?.carrier
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            className={`${getStatusColor(order?.status as OrderStatus | ShipmentStatus)} mx-auto w-fit rounded-full px-3 py-[2px] text-xs font-semibold capitalize text-white`}
+                          >
+                            {order?.currentStatusDesc}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  }
+                })}
               </TableBody>
             </Table>
           </div>

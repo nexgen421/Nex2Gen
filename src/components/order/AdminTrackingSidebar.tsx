@@ -44,6 +44,10 @@ const fadeIn = {
   visible: { opacity: 1 },
 };
 
+const handleTrackingPageRedirect = (trackingLink: string) => {
+  window.open(trackingLink, '_blank');
+}
+
 const AdminTrackingSidebar: React.FC<AdminTrackingSidebarProps> = ({
   awbNumber,
 }) => {
@@ -53,8 +57,8 @@ const AdminTrackingSidebar: React.FC<AdminTrackingSidebarProps> = ({
     isLoading,
     data: shipmentData,
     error,
-  } = api.shipment.trackShipment.useQuery(
-    { awbNumber },
+  } = api.shipment.trackShipwayShipment.useQuery(
+    { order_id: awbNumber },
     {
       enabled: isOpen, // Only fetch when the sidebar is open
     },
@@ -76,11 +80,12 @@ const AdminTrackingSidebar: React.FC<AdminTrackingSidebarProps> = ({
           ) : error ? (
             <ErrorDisplay message={error.message} />
           ) : (
-            shipmentData && <ShipmentDetails data={shipmentData.at(0)} />
+            // JSON.stringify(shipmentData, null, 2)
+            shipmentData && <ShipmentDetails data={shipmentData} />
           )}
         </ScrollArea>
         <SheetFooter>
-          <Button size="lg" variant="outline" className="mt-4 w-full">
+          <Button onClick={() => { handleTrackingPageRedirect(shipmentData.tracking_url) }} size="lg" variant="outline" className="mt-4 w-full">
             <Eye className="mr-2 h-5 w-5" />
             View Tracking Page
           </Button>
@@ -110,7 +115,7 @@ const ErrorDisplay = ({ message }: { message: string }) => (
   </Card>
 );
 
-const ShipmentDetails = ({ data }: { data: TrackingItem | undefined }) => (
+const ShipmentDetails = ({ data }: { data: any | undefined }) => (
   <motion.div
     initial="hidden"
     animate="visible"
@@ -129,7 +134,7 @@ const ShipmentDetails = ({ data }: { data: TrackingItem | undefined }) => (
           <div>
             <p className="text-sm font-medium">Status</p>
             <p className="text-lg font-semibold capitalize">
-              {data?.delivery_status}
+              {data?.current_status}
             </p>
           </div>
         </div>
@@ -137,7 +142,7 @@ const ShipmentDetails = ({ data }: { data: TrackingItem | undefined }) => (
           <Truck className="h-6 w-6 text-muted-foreground" />
           <div>
             <p className="text-sm font-medium">Courier</p>
-            <p className="text-lg font-semibold">{data?.courier_code}</p>
+            <p className="text-lg font-semibold">{data?.carrier}</p>
           </div>
         </div>
         <div className="flex items-center space-x-4">
@@ -145,7 +150,7 @@ const ShipmentDetails = ({ data }: { data: TrackingItem | undefined }) => (
           <div>
             <p className="text-sm font-medium">Destination</p>
             <p className="text-lg font-semibold">
-              {data?.destination_city ?? "N/A"}
+              {data?.to ?? "N/A"}
             </p>
           </div>
         </div>
@@ -154,8 +159,8 @@ const ShipmentDetails = ({ data }: { data: TrackingItem | undefined }) => (
           <div>
             <p className="text-sm font-medium">Expected Delivery</p>
             <p className="text-lg font-semibold">
-              {data?.scheduled_delivery_date
-                ? format(new Date(data.scheduled_delivery_date), "MMM dd, yyyy")
+              {data?.extra_fields?.expected_delivery_date
+                ? format(new Date(data?.extra_fields?.expected_delivery_date), "MMM dd, yyyy")
                 : "N/A"}
             </p>
           </div>
@@ -163,37 +168,40 @@ const ShipmentDetails = ({ data }: { data: TrackingItem | undefined }) => (
       </CardContent>
     </Card>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>Tracking Timeline</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Timeline>
-          {data?.origin_info.trackinfo.map((event, index: number) => (
-            <TimelineItem key={index}>
-              {index < data?.origin_info.trackinfo.length - 1 && (
-                <TimelineConnector />
-              )}
-              <TimelineHeader>
-                <TimelineIcon />
-                <TimelineTitle>
-                  {format(
-                    new Date(event.checkpoint_date),
-                    "MMM dd, yyyy HH:mm",
-                  )}
-                </TimelineTitle>
-              </TimelineHeader>
-              <TimelineContent>
-                <TimelineBody>{event.tracking_detail}</TimelineBody>
-                <p className="text-sm text-muted-foreground">
-                  {event.location}
-                </p>
-              </TimelineContent>
-            </TimelineItem>
-          ))}
-        </Timeline>
-      </CardContent>
-    </Card>
+    {
+      data?.scan &&
+      <Card>
+        <CardHeader>
+          <CardTitle>Tracking Timeline</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Timeline>
+            {data?.scan.map((event: any, index: number) => (
+              <TimelineItem key={index}>
+                {index < data?.scan.length - 1 && (
+                  <TimelineConnector />
+                )}
+                <TimelineHeader>
+                  <TimelineIcon />
+                  <TimelineTitle>
+                    {format(
+                      new Date(event.time),
+                      "MMM dd, yyyy HH:mm",
+                    )}
+                  </TimelineTitle>
+                </TimelineHeader>
+                <TimelineContent>
+                  <TimelineBody>{event.status_detail}</TimelineBody>
+                  <p className="text-sm text-muted-foreground">
+                    {event.location}
+                  </p>
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        </CardContent>
+      </Card>
+    }
   </motion.div>
 );
 

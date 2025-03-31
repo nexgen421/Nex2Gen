@@ -476,6 +476,38 @@ model Shipment {
   @@index([trackingId])
 }
 
+
+model Tracking {
+  id                 Int      @id @default(autoincrement())
+  awbNumber          String    
+  orderId            String    
+  phone              String?
+  firstName          String?
+  lastName           String?
+  email              String?
+  countryCode        String?
+  pickupdate         String?
+  currentStatus      String?
+  from               String?
+  to                 String?
+  statusTime         DateTime?
+  orderData          String?
+  carrier            String?
+  carrierId          Int?
+  receivedBy         String?
+  currentStatusDesc  String?
+  trackingUrl        String?
+  callbackUrl        String?
+  webhookSentDate    DateTime?
+  extraFields        Json?
+  scans              Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([awbNumber])
+}
+
 model OrderPricing {
   id      String @id @default(uuid())
   orderId String @unique

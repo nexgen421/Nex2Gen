@@ -37,6 +37,17 @@ export interface CreateTrackingResponse {
   data: TrackingItem;
 }
 
+export interface ShipWayCreateTrackingResponse {
+  status: string
+  message: string;
+}
+
+export interface ShipWayTrackingResponse {
+  status: string
+  response: any;
+  message?: string;
+}
+
 export interface GetAllTrackingsResponse {
   meta: {
     code: number; // e.g., 200
@@ -62,15 +73,15 @@ export interface TrackingItem {
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
   delivery_status:
-    | "inforeceived"
-    | "transit"
-    | "pickup"
-    | "undelivered"
-    | "delivered"
-    | "exception"
-    | "expired"
-    | "notfound"
-    | "pending"; // e.g., "pending", "transit", "inforeceived"
+  | "inforeceived"
+  | "transit"
+  | "pickup"
+  | "undelivered"
+  | "delivered"
+  | "exception"
+  | "expired"
+  | "notfound"
+  | "pending"; // e.g., "pending", "transit", "inforeceived"
   archived: string; // e.g., "tracking"
   updating: boolean;
   source: string; // e.g., "API"
