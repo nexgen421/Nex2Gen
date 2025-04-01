@@ -114,7 +114,7 @@ const adminOrderRouter = createTRPCRouter({
           });
         }
 
-        if (response.status !== "Success") {
+        if (response.status !== "Success" && response.message !== 'Order is already pushed') {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: response.message,
