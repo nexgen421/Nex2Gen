@@ -137,8 +137,8 @@ const adminShipmentRouter = createTRPCRouter({
 
       const tracking_orders = await ctx.db.tracking.findMany({
         where: newBaseWhere,
-        take: limit,
-        skip,
+        // take: limit,
+        // skip,
         orderBy: { id: "desc" },
         select: {
           id: true,
