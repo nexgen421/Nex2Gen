@@ -11,13 +11,13 @@ interface Props {
 }
 
 const getPartnerSource = (courierProvider: string | undefined) => {
-  if (courierProvider === "499") {
+  if (courierProvider === "499" || courierProvider === "shadowfax") {
     return "/partners/shadowfax.jpg";
-  } else if (courierProvider === "2") {
+  } else if (courierProvider === "2" || courierProvider === "delhivery") {
     return "/partners/delhivery-logo.png";
-  } else if (courierProvider === "6") {
+  } else if (courierProvider === "6" || courierProvider === "ecom-express") {
     return "/partners/ecomexpress-logo.jpeg";
-  } else if (courierProvider === "16") {
+  } else if (courierProvider === "16" || courierProvider === "xpressbees") {
     return "/partners/xpressbees-logo.jpeg";
   } else if (courierProvider === "valmo") {
     return "/partners/valmo.png";

@@ -7,6 +7,7 @@ import { type ShipmentStatus } from "@prisma/client";
 import { type TrackingItem } from "~/lib/tracking-more/modules/types";
 import { env } from "~/env";
 import { type Prisma } from "@prisma/client";
+import { RiContrastDropLine } from "react-icons/ri";
 const adminOrderRouter = createTRPCRouter({
   approveOrder: ultraProtectedProcedure
     .input(
@@ -130,23 +131,6 @@ const adminOrderRouter = createTRPCRouter({
               : undefined,
           }
         })
-        // await ctx.db.order.update({
-        //   where: {
-        //     id: input.dbOrderId,
-        //   },
-        //   data: {
-        //     status: "READY_TO_SHIP",
-        //     shipment: {
-        //       create: {
-        //         awbNumber: input.awbNumber,
-        //         courierProvider: input.courierProvider,
-        //         trackingId: (response.data as Partial<TrackingItem>).id ?? "",
-        //         status: response.data.delivery_status
-        //           .toString()
-        //           .toUpperCase() as keyof typeof ShipmentStatus,
-        //       },
-        //     },
-        //   },
 
         await ctx.db.order.update({
           where: {
@@ -259,25 +243,33 @@ const adminOrderRouter = createTRPCRouter({
           orderDate: "desc",
         },
       });
-
+      const trackingCount = await ctx.db.tracking.count()
+      console.log("trackingCount", trackingCount);
+      
       const totalOrderCount = await ctx.db.order.count({
         where: {
           // userId: ctx.session.user.id,
         },
       });
-      const menupulated_orders = orders.map((order) => ({
-        ...order,
-        userAwbDetails: {
-          ...order.userAwbDetails,
-          awbNumber: order.userAwbDetails?.awbNumber
-            ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
-            : undefined,
-        },
-      }))
+      const menupulated_orders = orders.map((order, i) => {
+        console.log(i, order)
+        return ({
+          ...order,
+          userAwbDetails: {
+            ...order.userAwbDetails,
+            awbNumber: order.userAwbDetails?.awbNumber
+              ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
+              : undefined,
+          },
+        })
+      })
+      // console.log("tracking_orders", tracking_orders);
 
       const mergedData = menupulated_orders.map(order => {
+        console.log(String(order.userAwbDetails?.awbNumber))
         const tracking = tracking_orders.find(track => String(track.orderId) === String(order.userAwbDetails?.awbNumber));
         if (tracking) {
+          console.log({ ...order, ...tracking })
           return { ...order, ...tracking }
         }
         else {
