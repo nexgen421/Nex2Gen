@@ -1,4 +1,4 @@
-import Trackings from "./modules/trackings";
+import { ShipWayTracking, Trackings } from "./modules/trackings";
 
 class Tracker {
   trackings: Trackings;
@@ -7,4 +7,11 @@ class Tracker {
   }
 }
 
-export default Tracker;
+class ShipWayTracker {
+  trackings: ShipWayTracking;
+  constructor(username: string, password: string) {
+    this.trackings = new ShipWayTracking(username, password);
+  }
+}
+
+export { ShipWayTracker, Tracker };

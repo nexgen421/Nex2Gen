@@ -47,7 +47,7 @@ const page = () => {
   // debugger
   api.user.paymentWebhook.useQuery();
   const { data, isLoading } = api.user.getDashboardData.useQuery();
-  // console.log("hello")
+  console.log("hello")
   if (isLoading) {
     return <Loading />;
   }

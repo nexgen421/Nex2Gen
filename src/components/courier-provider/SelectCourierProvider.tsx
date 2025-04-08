@@ -25,14 +25,20 @@ const SelectCourierProvider: React.FC<SelectCourierProviderProps> = ({
         <SelectValue placeholder="Select A Courier Provider" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="delhivery">Delhivery</SelectItem>
-        <SelectItem value="ecom-express">EComExpress</SelectItem>
-        <SelectItem value="shadowfax">ShadowFax</SelectItem>
-        <SelectItem value="valmo">Valmo</SelectItem>
-        <SelectItem value="xpressbees">XPressBees</SelectItem>
+        <SelectItem value="2">Delhivery</SelectItem>
+        <SelectItem value="6">EComExpress</SelectItem>
+        <SelectItem value="499">ShadowFax</SelectItem>
+        <SelectItem value="16">XPressBees</SelectItem>
+        <SelectItem value="60">EKart</SelectItem>
+        <SelectItem value="99">Amazon</SelectItem>
+        <SelectItem value="7">DTDC</SelectItem>
+        <SelectItem value="24">Shree Maruti</SelectItem>
+        <SelectItem value="23">Trackon</SelectItem>
       </SelectContent>
     </Select>
   );
 };
+
+
 
 export default SelectCourierProvider;

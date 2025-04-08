@@ -15,6 +15,13 @@ import { cn } from "~/lib/utils";
 
 interface ExtendedPickupLocation extends PickupLocation {
   name: string;
+  pincode: number;
+  address: string;
+  famousLandmark: string;
+  state: string;
+  city: string;
+  contactName: string;
+  mobileNumber: string;
 }
 
 type SingleWarehouseCardProps = {
@@ -28,16 +35,17 @@ const SingleWarehouseCard: React.FC<SingleWarehouseCardProps> = ({
   onClickFunction,
   isActive,
 }) => {
-  const {
-    pincode,
-    address,
-    famousLandmark,
-    state,
-    city,
-    contactName,
-    mobileNumber,
-    name,
-  } = warehouseDetails;
+  console.log(warehouseDetails)
+  // const {
+  //   pincode,
+  //   address,
+  //   famousLandmark,
+  //   state,
+  //   city,
+  //   contactName,
+  //   mobileNumber,
+  //   name,
+  // } = warehouseDetails;
 
   return (
     <div
@@ -48,12 +56,12 @@ const SingleWarehouseCard: React.FC<SingleWarehouseCardProps> = ({
       )}
     >
       <p className="mb-2 text-gray-800">
-        <strong>{name}</strong>
+        <strong>{warehouseDetails?.name}</strong>
         <br />
-        {address}, {"near " + famousLandmark}, {city}, {state} - {pincode}
+        {warehouseDetails?.address}, {"near " + warehouseDetails?.famousLandmark}, {warehouseDetails?.city}, {warehouseDetails?.state} - {warehouseDetails?.pincode}
         <br />
         <span>
-          <strong>Contact:</strong> {contactName} ({mobileNumber})
+          <strong>Contact:</strong> {warehouseDetails?.contactName} ({warehouseDetails?.mobileNumber})
         </span>
       </p>
     </div>
@@ -70,7 +78,7 @@ const WarehouseCard: React.FC<WarehouseCardProps> = ({
   setSelectedWarehouseId,
 }) => {
   const { data, isLoading } = api.order.getAllPickupLocation.useQuery();
-
+  // console.log("data =-=-=-=-=-=->", data)
   return (
     <Card className="min-h-[30vh] w-full">
       <CardHeader className="">
@@ -91,7 +99,7 @@ const WarehouseCard: React.FC<WarehouseCardProps> = ({
       ) : (
         <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
           <SingleWarehouseCard
-            warehouseDetails={data!}
+            warehouseDetails={data}
             onClickFunction={() =>
               setSelectedWarehouseId(data?.id as string | null)
             }

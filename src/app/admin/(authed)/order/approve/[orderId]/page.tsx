@@ -56,10 +56,10 @@ const Page = ({ params }: { params: { orderId: string } }) => {
   const detectCourierProvider = (awb: string) => {
     // These are example patterns. You should replace them with actual patterns used by each courier.
     const patterns = {
-      delhivery: /^1490[0-9]{11}$/,
-      "ecom-express": /^[0-9]{10}$/,
-      shadowfax: /^SF[0-9]{10}$/,
-      xpressbees: /^1340[0-9]{11}$/,
+      "2": /^1490[0-9]{11}$/,
+      "6": /^[0-9]{10}$/,
+      "499": /^SF[0-9]{10}$/,
+      "16": /^1340[0-9]{11}$/,
     };
 
     for (const [courier, pattern] of Object.entries(patterns)) {
@@ -78,12 +78,7 @@ const Page = ({ params }: { params: { orderId: string } }) => {
     }
     await mutateAsync({
       awbNumber: obj.awbNumber,
-      courierProvider: courierProvider as
-        | "delhivery"
-        | "ecom-express"
-        | "shadowfax"
-        | "valmo"
-        | "xpressbees",
+      courierProvider: courierProvider as string,
       dbOrderId: orderId,
     });
 

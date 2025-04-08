@@ -64,29 +64,39 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 type ShipmentStatus =
-  | "ALL"
-  | "INFORECEIVED"
-  | "TRANSIT"
-  | "PENDING"
-  | "DELIVERED"
-  | "PICKUP"
-  | "UNDELIVERED"
-  | "EXCEPTION";
+  | "ALL" |
+  "DELIVERED" |
+  "IN TRANSIST" |
+  "RTO" |
+  "RTO DELIVERED" |
+  "CANCELLED" |
+  "SHIPMENT BOOKED" |
+  "PICKED UP" |
+  "OUT OF DELIVERY" |
+  "NO INFORMATION YET" |
+  "OUT OF DELIVERY AREA" |
+  "DELIVERY DELAYED" |
+  "UNDELIVERED ATTEMPT";
 
 const tabTriggerHeaderCountKey = (status: ShipmentStatus) => {
-  if (status === "INFORECEIVED") return "infoReceivedCount";
-  else if (status === "PENDING") return "pickupPendingCount";
-  else if (status === "TRANSIT") return "inTransitCount";
-  else if (status === "DELIVERED") return "deliveredCount";
-  else if (status === "UNDELIVERED") return "undeliveredCount";
-  else if (status === "EXCEPTION") return "exceptionCount";
-  else if (status === "PICKUP") return "pickupScheduledCount";
+  if (status === "IN TRANSIST") return "inTransist";
+  else if (status === "DELIVERED") return "delivered";
+  else if (status === "RTO") return "rto";
+  else if (status === "RTO DELIVERED") return "rtoDelivered";
+  else if (status === "CANCELLED") return "calcelled";
+  else if (status === "SHIPMENT BOOKED") return "shipmentBooked";
+  else if (status === "PICKED UP") return "pickedUp";
+  else if (status === "OUT OF DELIVERY") return "outOfDelivery";
+  else if (status === "NO INFORMATION YET") return "noInformationYet";
+  else if (status === "OUT OF DELIVERY AREA") return "outOfDeliveryArea";
+  else if (status === "DELIVERY DELAYED") return "deliveryDelayed";
+  else if (status === "UNDELIVERED ATTEMPT") return "undeliveredAttempt";
   else return "allCount";
 };
 
 const AdminShipmentListTable = () => {
   const [activeTab, setActiveTab] = useState<ShipmentStatus>("ALL");
-  const { data, isLoading } = api.shipment.getShipmentCount.useQuery();
+  const { data, isLoading } = api.shipment.getNewShipmentCount.useQuery();
 
   if (isLoading) return <Loading />;
 
@@ -98,13 +108,18 @@ const AdminShipmentListTable = () => {
       <TabsList>
         {[
           "ALL",
-          "INFORECEIVED",
-          "TRANSIT",
-          "PENDING",
           "DELIVERED",
-          "PICKUP",
-          "UNDELIVERED",
-          "EXCEPTION",
+          "IN TRANSIST",
+          "RTO",
+          "RTO DELIVERED",
+          "CANCELLED",
+          "SHIPMENT BOOKED",
+          "PICKED UP",
+          "OUT OF DELIVERY",
+          "NO INFORMATION YET",
+          "OUT OF DELIVERY AREA",
+          "DELIVERY DELAYED",
+          "UNDELIVERED ATTEMPT",
         ].map((status) => (
           <TabsTrigger key={status} value={status}>
             {status} (
@@ -227,66 +242,68 @@ const ShipmentListTable = ({
               </TableHeader>
               <TableBody>
                 {data?.items.map((order) => {
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <Tooltip>
-                          <TooltipTrigger className="max-w-[200px] truncate">
-                            {order.orderCustomerDetails?.customerName}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {order.orderCustomerDetails?.customerName}
-                          </TooltipContent>
-                        </Tooltip>
-                        <div>{order.orderCustomerDetails?.customerMobile}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Tooltip>
-                          <TooltipTrigger className="max-w-[200px] truncate">
-                            {`${order.orderAdressDetails?.houseNumber}, ${order.orderAdressDetails?.streetName}, ${order.orderAdressDetails?.city}, ${order.orderAdressDetails?.state}`}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {`${order.orderAdressDetails?.houseNumber}, ${order.orderAdressDetails?.streetName}, ${order.orderAdressDetails?.city}, ${order.orderAdressDetails?.state}`}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>
-                        <AdminTrackingSidebar
-                          awbNumber={order.shipment?.awbNumber ?? ""}
-                        />
-                      </TableCell>
-                      <TableCell>{order.userAwbDetails?.awbNumber}</TableCell>
-                      <TableCell className="flex flex-col items-center gap-2">
-                        <Badge className="rounded-full">
-                          {order.shipment?.status}
-                        </Badge>
-                        <Tooltip>
-                          <TooltipTrigger className="max-w-[200px] truncate">
-                            {order.shipment?.subStatus
-                              ? SUBSTATUS[
-                                  order.shipment
-                                    ?.subStatus as keyof typeof SUBSTATUS
-                                ]
-                              : "Unknown"}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {order.shipment?.subStatus
-                              ? SUBSTATUS[
-                                  order.shipment
-                                    ?.subStatus as keyof typeof SUBSTATUS
-                                ]
-                              : "Unknown"}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>
-                        {moment(order.orderDate).format("DD/MM/YYYY hh:mm A")}
-                      </TableCell>
-                      <TableCell>
-                        <EditAWBDialog orderId={order.id} />
-                      </TableCell>
-                    </TableRow>
-                  );
+                  if (order) {
+                    return (
+                      <TableRow key={order.id}>
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger className="max-w-[200px] truncate">
+                              {order.orderCustomerDetails?.customerName}
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {order.orderCustomerDetails?.customerName}
+                            </TooltipContent>
+                          </Tooltip>
+                          <div>{order.orderCustomerDetails?.customerMobile}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger className="max-w-[200px] truncate">
+                              {`${order.orderAdressDetails?.houseNumber}, ${order.orderAdressDetails?.streetName}, ${order.orderAdressDetails?.city}, ${order.orderAdressDetails?.state}`}
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {`${order.orderAdressDetails?.houseNumber}, ${order.orderAdressDetails?.streetName}, ${order.orderAdressDetails?.city}, ${order.orderAdressDetails?.state}`}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell>
+                          <AdminTrackingSidebar
+                            awbNumber={order.shipment?.awbNumber ?? ""}
+                          />
+                        </TableCell>
+                        <TableCell>{order.userAwbDetails?.awbNumber}</TableCell>
+                        <TableCell className="flex flex-col items-center gap-2">
+                          <Badge className="rounded-full">
+                            {order?.currentStatusDesc ?? "No Information Yet"}
+                          </Badge>
+                          {/* <Tooltip>
+                            <TooltipTrigger className="max-w-[200px] truncate">
+                              {order.shipment?.subStatus
+                                ? SUBSTATUS[
+                                    order.shipment
+                                      ?.subStatus as keyof typeof SUBSTATUS
+                                  ]
+                                : "Unknown"}
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {order.shipment?.subStatus
+                                ? SUBSTATUS[
+                                    order.shipment
+                                      ?.subStatus as keyof typeof SUBSTATUS
+                                  ]
+                                : "Unknown"}
+                            </TooltipContent>
+                          </Tooltip> */}
+                        </TableCell>
+                        <TableCell>
+                          {moment(order.orderDate).format("DD/MM/YYYY hh:mm A")}
+                        </TableCell>
+                        <TableCell>
+                          <EditAWBDialog orderId={order.id} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
                 })}
               </TableBody>
             </Table>

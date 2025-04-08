@@ -1,4 +1,5 @@
-import Tracker from "~/lib/tracking-more";
+import { ShipWayTracker, Tracker } from "~/lib/tracking-more";
+// import { ShipWayTracking } from "~/lib/tracking-more";
 import { createTRPCRouter, ultraProtectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -6,18 +7,13 @@ import { type ShipmentStatus } from "@prisma/client";
 import { type TrackingItem } from "~/lib/tracking-more/modules/types";
 import { env } from "~/env";
 import { type Prisma } from "@prisma/client";
+import { RiContrastDropLine } from "react-icons/ri";
 const adminOrderRouter = createTRPCRouter({
   approveOrder: ultraProtectedProcedure
     .input(
       z.object({
         awbNumber: z.string(),
-        courierProvider: z.enum([
-          "delhivery",
-          "ecom-express",
-          "xpressbees",
-          "shadowfax",
-          "valmo",
-        ]),
+        courierProvider: z.string(),
         dbOrderId: z.string(),
       }),
     )
@@ -27,9 +23,25 @@ const adminOrderRouter = createTRPCRouter({
           id: input.dbOrderId,
         },
         select: {
+          orderId: true,
+          productName: true,
+          userAwbDetails: {
+            select: {
+              awbNumber: true
+            }
+          },
+          orderCustomerDetails: {
+            select: {
+              customerMobile: true,
+              customerName: true
+            }
+          },
           user: {
             select: {
               name: true,
+              email: true,
+              mobile: true,
+
               kycDetails: {
                 select: {
                   companyInfo: {
@@ -70,14 +82,31 @@ const adminOrderRouter = createTRPCRouter({
         }
       }
 
-      const tracker = new Tracker(env.TRACKINGMORE_API_KEY);
+      // const tracker = new Tracker(env.TRACKINGMORE_API_KEY);
+      const shipWayTracker = new ShipWayTracker(env.SHIPWAY_USERNAME, env.SHIPWAY_PASSWORD);
 
       try {
-        const response = await tracker.trackings.createTracking({
-          courier_code: input.courierProvider,
-          tracking_number: input.awbNumber,
-          customer_name: `${order?.user.name} - ${order?.user?.kycDetails?.companyInfo?.companyName}`,
+        // const response = await tracker.trackings.createTracking({
+        //   courier_code: input.courierProvider,
+        //   tracking_number: input.awbNumber,
+        //   customer_name: `${order?.user.name} - ${order?.user?.kycDetails?.companyInfo?.companyName}`,
+        // });
+
+        const response = await shipWayTracker.trackings.createTracking({
+          carrier_id: input.courierProvider,
+          awb: input.awbNumber,
+          order_id: order?.userAwbDetails?.awbNumber
+            ? order?.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
+            : undefined,
+          first_name: order?.user.name,
+          last_name: order?.orderCustomerDetails?.customerName,
+          email: order?.user.email,
+          phone: order?.orderCustomerDetails?.customerMobile,
+          products: order?.productName,
+          shipment_type: "1",
+          company: order?.user?.kycDetails?.companyInfo?.companyName,
         });
+        console.log("93 -------- response =-=-=->", response)
 
         if (!response) {
           throw new TRPCError({
@@ -86,14 +115,22 @@ const adminOrderRouter = createTRPCRouter({
           });
         }
 
-        if (response.meta.code !== 200) {
+        if (response.status !== "Success" && response.message !== 'Order is already pushed') {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: response.meta.message,
+            message: response.message,
           });
         }
         // TODO: Remove this console.log after testing
-        console.log("TRACKINGMORE RESPONSE CREATED", response.data);
+        console.log("TRACKINGMORE RESPONSE CREATED", response);
+        await ctx.db?.tracking.create({
+          data: {
+            awbNumber: input.awbNumber,
+            orderId: order?.userAwbDetails?.awbNumber
+              ? String(order?.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET)
+              : undefined,
+          }
+        })
 
         await ctx.db.order.update({
           where: {
@@ -105,14 +142,15 @@ const adminOrderRouter = createTRPCRouter({
               create: {
                 awbNumber: input.awbNumber,
                 courierProvider: input.courierProvider,
-                trackingId: (response.data as Partial<TrackingItem>).id ?? "",
-                status: response.data.delivery_status
+                trackingId: String(order?.orderId),
+                status: "PENDING"
                   .toString()
                   .toUpperCase() as keyof typeof ShipmentStatus,
               },
             },
           },
         });
+
       } catch (error) {
         console.log(error);
         throw error;
@@ -148,6 +186,30 @@ const adminOrderRouter = createTRPCRouter({
           },
         }),
       };
+      const newBaseWhere: Prisma.TrackingWhereInput = {
+        orderId: {
+          contains: input.awbNumber,
+          mode: "insensitive",
+        }
+      };
+
+      const tracking_orders = await ctx.db.tracking.findMany({
+        where: newBaseWhere,
+        // skip: (input.cursor ?? 0) * input.limit,
+        // take: input.limit,
+        orderBy: { id: "desc" },
+        select: {
+          id: true,
+          awbNumber: true,
+          orderId: true,
+          lastName: true,
+          carrier: true,
+          currentStatusDesc: true,
+          extraFields: true,
+          scans: true,
+          currentStatus: true,
+        },
+      });
 
       const orders = await ctx.db.order.findMany({
         where,
@@ -181,15 +243,17 @@ const adminOrderRouter = createTRPCRouter({
           orderDate: "desc",
         },
       });
-
+      const trackingCount = await ctx.db.tracking.count()
+      console.log("trackingCount", trackingCount);
+      
       const totalOrderCount = await ctx.db.order.count({
         where: {
           // userId: ctx.session.user.id,
         },
       });
-
-      return {
-        orders: orders.map((order) => ({
+      const menupulated_orders = orders.map((order, i) => {
+        console.log(i, order)
+        return ({
           ...order,
           userAwbDetails: {
             ...order.userAwbDetails,
@@ -197,7 +261,23 @@ const adminOrderRouter = createTRPCRouter({
               ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
               : undefined,
           },
-        })),
+        })
+      })
+      // console.log("tracking_orders", tracking_orders);
+
+      const mergedData = menupulated_orders.map(order => {
+        console.log(String(order.userAwbDetails?.awbNumber))
+        const tracking = tracking_orders.find(track => String(track.orderId) === String(order.userAwbDetails?.awbNumber));
+        if (tracking) {
+          console.log({ ...order, ...tracking })
+          return { ...order, ...tracking }
+        }
+        else {
+          return
+        }
+      });
+      return {
+        orders: mergedData,
         totalOrderCount,
       };
     }),

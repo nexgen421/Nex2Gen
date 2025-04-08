@@ -5,6 +5,8 @@ import {
   type CreateTrackingResponse,
   type GetAllTrackingsResponse,
   type GetFilteredTrackingsResponse,
+  ShipWayCreateTrackingResponse,
+  ShipWayTrackingResponse,
 } from "./types";
 import axios, { isAxiosError } from "axios";
 
@@ -221,4 +223,88 @@ class Trackings {
   }
 }
 
-export default Trackings;
+
+class ShipWayTracking {
+  username: string;
+  password: string;
+  apiBaseUrl: string;
+
+  constructor(username: string, password: string) {
+    if (username.length === 0 || password.length === 0) {
+      throw new Error("Credentials Missing");
+    }
+    this.username = username;
+    this.password = password;
+    this.apiBaseUrl = "https://shipway.in/api";
+  }
+
+  async createTracking(
+    params: any,
+  ): Promise<ShipWayCreateTrackingResponse | undefined> {
+    if (!params.carrier_id) {
+      throw new Error("Courier Code can't be missing");
+    }
+
+    if (!params.awb) {
+      throw new Error("Tracking Number can't be missing");
+    }
+
+    if (!params.phone) {
+      throw new Error("Phone number can't be blank");
+    }
+
+    const apiPath = "PushOrderData";
+
+    console.log({ username: this.username, password: this.password, ...params });
+
+    try {
+      const response = await axios.post<any>(
+        this.apiBaseUrl + "/" + apiPath,
+        { username: this.username, password: this.password, ...params },
+        {
+          headers: {
+            "Content-Type": "application/json"
+          },
+        },
+      );
+      console.log(response.data)
+      if (response.data.status === "Success") {
+        return response.data;
+      }
+    } catch (error) {
+      console.log(error)
+      throw error;
+    }
+  }
+
+  async getTrackingDetailsByOrderID(
+    order_id: string,
+  ): Promise<ShipWayTrackingResponse | undefined> {
+    if (!order_id) {
+      throw new Error("Order ID can't be missing");
+    }
+    const apiPath = "getOrderShipmentDetails";
+    console.log({ username: this.username, password: this.password, order_id });
+    try {
+      const response = await axios.post<any>(
+        this.apiBaseUrl + "/" + apiPath,
+        { username: this.username, password: this.password, order_id },
+        {
+          headers: {
+            "Content-Type": "application/json"
+          },
+        },
+      );
+      console.log(response.data)
+      if (response.data.status === "Success") {
+        return response.data;
+      }
+    } catch (error) {
+      console.log(error)
+      throw error;
+    }
+  }
+
+}
+
+export { ShipWayTracking, Trackings };
