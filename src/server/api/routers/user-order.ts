@@ -300,6 +300,30 @@ const userOrderRouter = createTRPCRouter({
           },
         }),
       };
+      const newBaseWhere: Prisma.TrackingWhereInput = {
+        orderId: {
+          contains: input.awbNumber,
+          mode: "insensitive",
+        }
+      };
+
+      const tracking_orders = await ctx.db.tracking.findMany({
+        where: newBaseWhere,
+        // skip: (input.cursor ?? 0) * input.limit,
+        // take: input.limit,
+        orderBy: { id: "desc" },
+        select: {
+          id: true,
+          awbNumber: true,
+          orderId: true,
+          lastName: true,
+          carrier: true,
+          currentStatusDesc: true,
+          extraFields: true,
+          scans: true,
+          currentStatus: true,
+        },
+      });
 
       const orders = await ctx.db.order.findMany({
         where,
@@ -309,21 +333,41 @@ const userOrderRouter = createTRPCRouter({
           shipment: true,
           userAwbDetails: true,
           orderCustomerDetails: true,
+          user: {
+            select: {
+              name: true,
+              kycDetails: {
+                select: {
+                  id: true,
+                  userId: true,
+                  // mobile:true
+                  // CompanyInfo:true
+                  companyInfo: true
+                },
+              }
+              // mobile:true
+            },
+            // include: {
+
+            // }
+          }
         },
         orderBy: {
           orderDate: "desc",
         },
       });
-
+      const trackingCount = await ctx.db.tracking.count()
+      console.log("trackingCount", trackingCount);
+      
       const totalOrderCount = await ctx.db.order.count({
         where
         // where: {
         //   userId: ctx.session.user.id,
         // },
       });
-
-      return {
-        orders: orders.map((order) => ({
+      const menupulated_orders = orders.map((order, i) => {
+        console.log(i, order)
+        return ({
           ...order,
           userAwbDetails: {
             ...order.userAwbDetails,
@@ -331,7 +375,22 @@ const userOrderRouter = createTRPCRouter({
               ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
               : undefined,
           },
-        })),
+        })
+      })
+
+      const mergedData = menupulated_orders.map(order => {
+        console.log(String(order.userAwbDetails?.awbNumber))
+        const tracking = tracking_orders.find(track => String(track.orderId) === String(order.userAwbDetails?.awbNumber));
+        if (tracking) {
+          console.log({ ...order, ...tracking })
+          return { ...order, ...tracking }
+        }
+        else {
+          return
+        }
+      });
+      return {
+        orders: mergedData,
         totalOrderCount,
       };
     }),

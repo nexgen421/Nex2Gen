@@ -135,6 +135,9 @@ const adminShipmentRouter = createTRPCRouter({
         },
       });
 
+      const tracking_count = await ctx.db.tracking.count()
+      console.log("tracking_count", tracking_count);
+
       const tracking_orders = await ctx.db.tracking.findMany({
         where: newBaseWhere,
         // take: limit,
@@ -152,15 +155,20 @@ const adminShipmentRouter = createTRPCRouter({
           currentStatus: true,
         },
       });
-      const menupulated_orders = orders.map((order) => ({
-        ...order,
-        userAwbDetails: {
-          awbNumber: order.userAwbDetails?.awbNumber
-            ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
-            : 0,
-        },
-      }))
+      const menupulated_orders = orders.map((order) => {
+        console.log(order.userAwbDetails?.awbNumber ? order.userAwbDetails?.awbNumber : "Hello");
+
+        return ({
+          ...order,
+          userAwbDetails: {
+            awbNumber: order.userAwbDetails?.awbNumber
+              ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
+              : 0,
+          },
+        })
+      })
       const mergedData = menupulated_orders.map(order => {
+        console.log(String(order.userAwbDetails?.awbNumber));
         const tracking = tracking_orders.find(track => String(track.orderId) === String(order.userAwbDetails?.awbNumber));
         if (tracking) {
           return { ...order, ...tracking }
