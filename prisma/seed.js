@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
+
 export const reasonsWithSubReasons = [
   {
     reason: "Delivery Issues",
@@ -233,7 +234,7 @@ async function main() {
   await prisma.user.create({
     data: {
       email: "testing@gmail.com",
-      password: await bcrypt.hash("Getlost@007", 10),
+      password: await bcrypt.hash("password", 10),
       name: "testing",
       isApproved: true,
       isKycSubmitted: true,
@@ -284,7 +285,7 @@ async function main() {
       email: "admintesting@gmail.com",
       name: "Admin",
       mobile: "1234567890",
-      password: await bcrypt.hash("Getlost@007", 10),
+      password: await bcrypt.hash("password", 10),
       approved: true,
       isOwner: true,
     },

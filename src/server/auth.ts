@@ -11,7 +11,6 @@ import { env } from "~/env";
 import { db } from "~/server/db";
 import bcrypt from "bcrypt";
 import { z, ZodError } from "zod";
-import { sendMagicLink } from "./lib/send-verification-link";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -91,8 +90,6 @@ export const authOptions: NextAuthOptions = {
               email: true,
               image: true,
               name: true,
-              userVerificationDetails: true,
-              emailVerified: true,
             },
           });
 
@@ -107,17 +104,6 @@ export const authOptions: NextAuthOptions = {
 
           if (!isValidPassword) {
             throw new Error("Invalid Password");
-          }
-
-          if (user.emailVerified === null) {
-            await sendMagicLink(
-              user.email,
-              user.userVerificationDetails?.token,
-              user.name,
-            );
-            throw new Error(
-              "Email not verified! Resent Verification Email to your email",
-            );
           }
 
           return {
