@@ -3,7 +3,7 @@ import {
   publicProcedure,
   ultraProtectedProcedure,
 } from "../trpc";
-import Tracker from "~/lib/tracking-more";
+import { Tracker } from "~/lib/tracking-more";
 import { env } from "~/env";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";

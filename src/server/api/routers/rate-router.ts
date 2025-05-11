@@ -115,16 +115,16 @@ const rateRouter = createTRPCRouter({
   createRatesForUsers: ultraProtectedProcedure
     .input(CreateRatesForUserValidator)
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.user.update({
-        where: {
-          id: input.userId,
-        },
+      const { userId, ...rateData } = input;
+
+      await ctx.db.rateList.create({
         data: {
-          rateList: {
-            create: {
-              ...input,
+          user: {
+            connect: {
+              id: userId,
             },
           },
+          ...rateData,
         },
       });
 

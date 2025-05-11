@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -14,10 +13,6 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Loading from "~/app/loading";
-import { Label } from "~/components/ui/label";
-import axios from "axios";
-import { Axis3D } from "lucide-react";
-import { string } from "zod";
 
 interface TRefNumber {
   refNumber: string;
@@ -36,22 +31,18 @@ interface TRefNumber {
 //   };
 // }
 
-
-
-
 const AddFundsPage = () => {
   const { data, isLoading } = api.wallet.getFunds.useQuery();
 
-  const { mutateAsync: createWalletRequest, isPending } = api.wallet.createWalletRequest.useMutation(
-    {
+  const { mutateAsync: createWalletRequest, isPending } =
+    api.wallet.createWalletRequest.useMutation({
       onError(error) {
         toast.error(error.message);
       },
-    },
-  );
-  const { mutateAsync: paymentCreate } = api.payment.paymentCreate.useMutation();
+    });
+  const { mutateAsync: paymentCreate } =
+    api.payment.paymentCreate.useMutation();
   const [fundInput, setFundInput] = useState<number>(0);
-
 
   const router = useRouter();
   const { register, handleSubmit } = useForm<TRefNumber>();
@@ -59,12 +50,12 @@ const AddFundsPage = () => {
   const generateOrderId = () => {
     const array = new Uint8Array(16);
     window.crypto.getRandomValues(array);
-    return Array.from(array, byte => ('0' + byte.toString(16)).slice(-2)).join('');
+    return Array.from(array, (byte) =>
+      ("0" + byte.toString(16)).slice(-2),
+    ).join("");
+  };
 
-
-  }
-
-  const [payMentUrl, setPaymentUrl] = useState('');
+  const [payMentUrl, setPaymentUrl] = useState("");
 
   useEffect(() => {
     if (payMentUrl) {
@@ -74,25 +65,23 @@ const AddFundsPage = () => {
   }, [payMentUrl]);
 
   const handleAddFundInWallet = async () => {
-    const amount = fundInput.toString();  // Example input for amount
-    const order_id = generateOrderId();  // You should define this function
-    const customerEmail = 'customer@example.com';  // Replace with actual email
+    const amount = fundInput.toString(); // Example input for amount
+    const order_id = generateOrderId(); // You should define this function
+    const customerEmail = "customer@example.com"; // Replace with actual email
     try {
       const data = await paymentCreate({
         amount,
-        order_id ,
+        order_id,
         customerEmail,
-      })
+      });
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       setPaymentUrl(data?.data);
       // window.open(data.data.result.payment_url)
-
     } catch (error) {
       console.error(error, "Error creating payment order");
     }
-
-  }
+  };
 
   const handleRefForm = async (data: TRefNumber) => {
     if (fundInput === 0) {
