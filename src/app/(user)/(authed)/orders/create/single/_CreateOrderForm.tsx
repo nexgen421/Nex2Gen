@@ -106,6 +106,24 @@ const CreateOrderForm = () => {
     console.log({ productCategory });
     console.log({ selectedWarehouseId });
 
+    if (
+      !data.customerName ||
+      !data.mobile ||
+      !data.email ||
+      !data.houseNumber ||
+      !data.streetName ||
+      !data.famousLandmark ||
+      !data.productName ||
+      !data.orderValue ||
+      !data.physicalWeight ||
+      !data.height ||
+      !data.length ||
+      !data.breadth
+    ) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
     if (selectedWarehouseId === null) {
       toast.error("Select a Warehouse!");
       return;
@@ -133,7 +151,7 @@ const CreateOrderForm = () => {
         houseNumber: data.houseNumber,
         streetName: data.streetName,
         productName: data.productName,
-        customerEmail: data.email?data.email:"dummy@gmail.com",
+        customerEmail: data.email ? data.email : "dummy@gmail.com",
         customerName: data.customerName,
         famousLandmark: data.famousLandmark,
         pincode: +pincode,
@@ -180,11 +198,19 @@ const CreateOrderForm = () => {
       <div className="flex flex-wrap items-center gap-10 py-5">
         <div className="flex flex-col gap-2">
           <Label htmlFor="customerName">Customer Full Name</Label>
-          <Input id="customerName" {...register("customerName")} />
+          <Input
+            id="customerName"
+            {...register("customerName", { required: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="Mobile No.">Mobile Number</Label>
-          <Input id="Mobile No."  maxLength={10}  type="string" {...register("mobile")} />
+          <Input
+            id="Mobile No."
+            maxLength={10}
+            type="string"
+            {...register("mobile", { required: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">Email</Label>
@@ -198,11 +224,17 @@ const CreateOrderForm = () => {
       <div className="flex flex-wrap items-center gap-10 py-5">
         <div className="flex flex-col gap-2">
           <Label htmlFor="houseNumber">House Number</Label>
-          <Input id="houseNumber" {...register("houseNumber")} />
+          <Input
+            id="houseNumber"
+            {...register("houseNumber", { required: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="streetName">Street Name</Label>
-          <Input id="streetName" {...register("streetName")} />
+          <Input
+            id="streetName"
+            {...register("streetName", { required: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="pincode">Pincode</Label>
@@ -221,7 +253,10 @@ const CreateOrderForm = () => {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="famousLandmark">Famous Landmark</Label>
-          <Input id="famousLandmark" {...register("famousLandmark")} />
+          <Input
+            id="famousLandmark"
+            {...register("famousLandmark", { required: true })}
+          />
         </div>
       </div>
 
@@ -235,7 +270,10 @@ const CreateOrderForm = () => {
         </div> */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="productName">Product Name</Label>
-          <Input id="productName" {...register("productName")} />
+          <Input
+            id="productName"
+            {...register("productName", { required: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="famousLandmark">Category</Label>
@@ -257,7 +295,10 @@ const CreateOrderForm = () => {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="orderValue">Order Value</Label>
-          <Input id="orderValue" {...register("orderValue")} />
+          <Input
+            id="orderValue"
+            {...register("orderValue", { required: true })}
+          />
         </div>
       </div>
 
@@ -272,19 +313,22 @@ const CreateOrderForm = () => {
             <span>Physical Weight (in KG)</span>
             <RatePopover />
           </Label>
-          <Input id="physicalWeight" {...register("physicalWeight")} />
+          <Input
+            id="physicalWeight"
+            {...register("physicalWeight", { required: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="length">Length (in CM)</Label>
-          <Input id="length" {...register("length")} />
+          <Input id="length" {...register("length", { required: true })} />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="breadth">Breadth (in CM)</Label>
-          <Input id="breadth" {...register("breadth")} />
+          <Input id="breadth" {...register("breadth", { required: true })} />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="height">Height (in CM)</Label>
-          <Input id="height" {...register("height")} />
+          <Input id="height" {...register("height", { required: true })} />
         </div>
       </div>
 
