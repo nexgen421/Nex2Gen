@@ -35,7 +35,7 @@ const SingleWarehouseCard: React.FC<SingleWarehouseCardProps> = ({
   onClickFunction,
   isActive,
 }) => {
-  console.log(warehouseDetails)
+  console.log(warehouseDetails);
   // const {
   //   pincode,
   //   address,
@@ -58,10 +58,13 @@ const SingleWarehouseCard: React.FC<SingleWarehouseCardProps> = ({
       <p className="mb-2 text-gray-800">
         <strong>{warehouseDetails?.name}</strong>
         <br />
-        {warehouseDetails?.address}, {"near " + warehouseDetails?.famousLandmark}, {warehouseDetails?.city}, {warehouseDetails?.state} - {warehouseDetails?.pincode}
+        {warehouseDetails?.address},{" "}
+        {"near " + warehouseDetails?.famousLandmark}, {warehouseDetails?.city},{" "}
+        {warehouseDetails?.state} - {warehouseDetails?.pincode}
         <br />
         <span>
-          <strong>Contact:</strong> {warehouseDetails?.contactName} ({warehouseDetails?.mobileNumber})
+          <strong>Contact:</strong> {warehouseDetails?.contactName} (
+          {warehouseDetails?.mobileNumber})
         </span>
       </p>
     </div>
@@ -78,7 +81,7 @@ const WarehouseCard: React.FC<WarehouseCardProps> = ({
   setSelectedWarehouseId,
 }) => {
   const { data, isLoading } = api.order.getAllPickupLocation.useQuery();
-  // console.log("data =-=-=-=-=-=->", data)
+  console.log("data =-=-=-=-=-=->", data);
   return (
     <Card className="min-h-[30vh] w-full">
       <CardHeader className="">

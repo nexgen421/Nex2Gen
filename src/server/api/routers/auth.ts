@@ -108,19 +108,9 @@ const authRouter = createTRPCRouter({
           email: email,
           password: hashedPassword,
           name: `${firstName} ${lastName}`,
-          mobile:mobile,
-          userVerificationDetails: {
-            create: {
-              token: randomUUID().toString(),
-            },
-          },
+          mobile: mobile,
         },
         select: {
-          userVerificationDetails: {
-            select: {
-              token: true,
-            },
-          },
           name: true,
           id: true,
         },
@@ -173,12 +163,6 @@ const authRouter = createTRPCRouter({
           },
         });
       }
-
-      await sendMagicLink(
-        email,
-        newUser.userVerificationDetails?.token,
-        newUser.name,
-      );
 
       return true;
     }),

@@ -1,5 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure, ultraProtectedProcedure } from "../trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  ultraProtectedProcedure,
+} from "../trpc";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
@@ -10,7 +14,7 @@ const CreateAdminValidator = z.object({
   lastName: z.string(),
   email: z.string(),
   password: z.string(),
-  mobile: z.string()
+  mobile: z.string(),
 });
 
 const LoginAdminValidator = z.object({
@@ -22,7 +26,6 @@ const adminAuthRouter = createTRPCRouter({
   createAdmin: publicProcedure
     .input(CreateAdminValidator)
     .mutation(async ({ ctx, input }) => {
-      // check if the given email is already present
       const { email, firstName, lastName, password } = input;
       const user = await ctx.db.admin.findFirst({
         where: {
@@ -44,7 +47,7 @@ const adminAuthRouter = createTRPCRouter({
           email: email,
           name: firstName + " " + lastName,
           password: hashedPassword,
-          mobile: input.mobile, 
+          mobile: input.mobile,
         },
       });
 
@@ -68,7 +71,11 @@ const adminAuthRouter = createTRPCRouter({
       }
 
       if (user.approved === false) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "User not approved! Contact developer@nexgencourierservice.com" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "User not approved! Contact developer@nexgencourierservice.com",
+        });
       }
 
       const isValid = await bcrypt.compare(password, user.password);
@@ -84,12 +91,12 @@ const adminAuthRouter = createTRPCRouter({
       const token = jwt.sign(user.id, env.ADMIN_AUTH_SECRET);
 
       return {
-        token
-      }
+        token,
+      };
     }),
-    fetchSession: ultraProtectedProcedure.query(async ({ ctx }) => {
-        return ctx.session.user;
-    })
+  fetchSession: ultraProtectedProcedure.query(async ({ ctx }) => {
+    return ctx.session.user;
+  }),
 });
 
 export default adminAuthRouter;

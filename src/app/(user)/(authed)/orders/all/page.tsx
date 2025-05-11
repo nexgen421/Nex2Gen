@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Input } from "~/components/ui/input";
-import { Button, buttonVariants } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import PaginationBtn from "~/components/pagination";
 import {
@@ -20,14 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "~/components/ui/pagination";
+// import {
+//   Pagination,
+//   PaginationContent,
+//   PaginationItem,
+//   PaginationLink,
+//   PaginationNext,
+//   PaginationPrevious,
+// } from "~/components/ui/pagination";
 import {
   Card,
   CardContent,
@@ -46,29 +46,29 @@ import {
 } from "~/components/ui/select";
 import { Label } from "~/components/ui/label";
 import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
+  // Tooltip,
+  // TooltipTrigger,
+  // TooltipContent,
   TooltipProvider,
 } from "~/components/ui/tooltip";
 import moment from "moment";
-import { SUBSTATUS } from "~/lib/constants";
-import { cn } from "~/lib/utils";
+// import { SUBSTATUS } from "~/lib/constants";
+// import { cn } from "~/lib/utils";
 
-interface TableCellTooltipProps {
-  children: React.ReactNode;
-}
+// interface TableCellTooltipProps {
+//   children: React.ReactNode;
+// }
 
-const TableCellTooltip: React.FC<TableCellTooltipProps> = ({ children }) => {
-  return (
-    <Tooltip>
-      <TooltipTrigger className="max-w-[200px] truncate">
-        {children}
-      </TooltipTrigger>
-      <TooltipContent>{children}</TooltipContent>
-    </Tooltip>
-  );
-};
+// const TableCellTooltip: React.FC<TableCellTooltipProps> = ({ children }) => {
+//   return (
+//     <Tooltip>
+//       <TooltipTrigger className="max-w-[200px] truncate">
+//         {children}
+//       </TooltipTrigger>
+//       <TooltipContent>{children}</TooltipContent>
+//     </Tooltip>
+//   );
+// };
 
 // Enums
 enum OrderStatus {
@@ -333,7 +333,9 @@ const OrdersTable: React.FC = () => {
                             <span>
                               {moment(order.orderDate).format("MMM DD, YYYY")}
                             </span>
-                            <span>{moment(order.orderDate).format("hh:mm A")}</span>
+                            <span>
+                              {moment(order.orderDate).format("hh:mm A")}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -347,9 +349,7 @@ const OrdersTable: React.FC = () => {
                             : "-"}
                         </TableCell>
                         <TableCell className="font-bold capitalize">
-                          {order.carrier
-                            ? order.carrier
-                            : "-"}
+                          {order.carrier ? order.carrier : "-"}
                         </TableCell>
                         <TableCell>
                           <div
@@ -359,7 +359,7 @@ const OrdersTable: React.FC = () => {
                           </div>
                         </TableCell>
                       </TableRow>
-                    )
+                    );
                   }
                 })}
               </TableBody>
@@ -417,7 +417,6 @@ const OrdersTable: React.FC = () => {
                 handleChange={handlePageChange}
                 totalPages={totalPages}
                 currentPage={currentPage}
-
               />
             </div>
           )}

@@ -7,7 +7,7 @@ import {
 import { z } from "zod";
 import { env } from "~/env";
 import { OrderStatus, type ShipmentStatus } from "@prisma/client";
-import Tracker from "~/lib/tracking-more";
+import { Tracker } from "~/lib/tracking-more";
 import { type TrackingItem } from "~/lib/tracking-more/modules/types";
 import moment from "moment";
 import { type Prisma } from "@prisma/client";
@@ -340,7 +340,7 @@ const orderRouter = createTRPCRouter({
       const orders = await ctx.db.order.findMany({
         where: {
           status: "BOOKED",
-          userId:input.id
+          userId: input.id,
         },
         select: {
           id: true,
@@ -724,7 +724,7 @@ const orderRouter = createTRPCRouter({
 
       return { userData: usersWithOrderCounts, userCount };
     }),
-    getUserWithOrderRequestCounts: ultraProtectedProcedure
+  getUserWithOrderRequestCounts: ultraProtectedProcedure
     .input(GetUsersValidator)
     .query(async ({ ctx, input }) => {
       const users = await ctx.db.user.findMany({
@@ -733,7 +733,7 @@ const orderRouter = createTRPCRouter({
         orderBy: {},
         where: {
           orders: {
-            some: { status: OrderStatus.BOOKED, }, // Only include users who have at least one order with status "hello"
+            some: { status: OrderStatus.BOOKED }, // Only include users who have at least one order with status "hello"
           },
         },
         select: {
@@ -750,7 +750,7 @@ const orderRouter = createTRPCRouter({
             },
           },
           orders: {
-            where: { status: OrderStatus.BOOKED, }, 
+            where: { status: OrderStatus.BOOKED },
             select: {
               status: true,
               orderDate: true,
@@ -950,53 +950,53 @@ const orderRouter = createTRPCRouter({
           userDetails?.kycDetails?.companyInfo?.companyContactNumber,
       };
     }),
-    // revenue
-    RevenuefetchAll: ultraProtectedProcedure
-        .input(FetchAllUsersValidator)
-        .query(async ({ ctx, input }) => {
-          const filter = input.filter;
-          const searchTerm = input.search;
-    
-          const where: Prisma.UserWhereInput = {
-            AND: [
-              filter === "approved" ? { isApproved: true } : {},
-              filter === "kyc" ? { isKycSubmitted: true, isApproved: false } : {},
-              filter === "pending"
-                ? {
-                    isApproved: false,
-                    isKycSubmitted: false,
-                  }
-                : {},
-              searchTerm
-                ? {
-                    OR: [{ name: { contains: searchTerm, mode: "insensitive" } }],
-                  }
-                : {},
-            ],
-          };
-    
-          const users = await ctx.db.user.findMany({
-            take: 10,
-            skip: (input.cursor ?? 0) * 10,
-            where,
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              email: true,
-              // mobile: true,
-              isApproved: true,
-              isKycSubmitted: true,
-              createdAt: true,
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          });
-    
-          const usersCount = await ctx.db.user.count({ where });
-          return { users, usersCount };
-        }),
+  // revenue
+  RevenuefetchAll: ultraProtectedProcedure
+    .input(FetchAllUsersValidator)
+    .query(async ({ ctx, input }) => {
+      const filter = input.filter;
+      const searchTerm = input.search;
+
+      const where: Prisma.UserWhereInput = {
+        AND: [
+          filter === "approved" ? { isApproved: true } : {},
+          filter === "kyc" ? { isKycSubmitted: true, isApproved: false } : {},
+          filter === "pending"
+            ? {
+                isApproved: false,
+                isKycSubmitted: false,
+              }
+            : {},
+          searchTerm
+            ? {
+                OR: [{ name: { contains: searchTerm, mode: "insensitive" } }],
+              }
+            : {},
+        ],
+      };
+
+      const users = await ctx.db.user.findMany({
+        take: 10,
+        skip: (input.cursor ?? 0) * 10,
+        where,
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          email: true,
+          // mobile: true,
+          isApproved: true,
+          isKycSubmitted: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      const usersCount = await ctx.db.user.count({ where });
+      return { users, usersCount };
+    }),
   rejectOrder: ultraProtectedProcedure
     .input(RejectOrderValidator)
     .mutation(async ({ ctx, input }) => {

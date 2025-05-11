@@ -26,7 +26,7 @@ const RegisterForm = () => {
     try {
       toast.promise(submitRegisterRequest({ ...data, captchaToken }), {
         richColors: true,
-        success: "Check Your Email for Verification Link!",
+        success: "You are successfully registered!",
         error(data) {
           if (data instanceof TRPCClientError) {
             return data.message;
