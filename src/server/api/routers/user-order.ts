@@ -304,7 +304,7 @@ const userOrderRouter = createTRPCRouter({
         orderId: {
           contains: input.awbNumber,
           mode: "insensitive",
-        }
+        },
       };
 
       const tracking_orders = await ctx.db.tracking.findMany({
@@ -342,32 +342,32 @@ const userOrderRouter = createTRPCRouter({
                   userId: true,
                   // mobile:true
                   // CompanyInfo:true
-                  companyInfo: true
+                  companyInfo: true,
                 },
-              }
+              },
               // mobile:true
             },
             // include: {
 
             // }
-          }
+          },
         },
         orderBy: {
           orderDate: "desc",
         },
       });
-      const trackingCount = await ctx.db.tracking.count()
+      const trackingCount = await ctx.db.tracking.count();
       console.log("trackingCount", trackingCount);
-      
+
       const totalOrderCount = await ctx.db.order.count({
-        where
+        where,
         // where: {
         //   userId: ctx.session.user.id,
         // },
       });
       const menupulated_orders = orders.map((order, i) => {
-        console.log(i, order)
-        return ({
+        console.log(i, order);
+        return {
           ...order,
           userAwbDetails: {
             ...order.userAwbDetails,
@@ -375,20 +375,32 @@ const userOrderRouter = createTRPCRouter({
               ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
               : undefined,
           },
-        })
-      })
-
-      const mergedData = menupulated_orders.map(order => {
-        console.log(String(order.userAwbDetails?.awbNumber))
-        const tracking = tracking_orders.find(track => String(track.orderId) === String(order.userAwbDetails?.awbNumber));
-        if (tracking) {
-          console.log({ ...order, ...tracking })
-          return { ...order, ...tracking }
-        }
-        else {
-          return
-        }
+        };
       });
+
+      const mergedData = menupulated_orders.map((order) => {
+        const awbWithOffset = order.userAwbDetails?.awbNumber;
+
+        const tracking = awbWithOffset
+          ? tracking_orders.find(
+              (track) => String(track.orderId) === String(awbWithOffset),
+            )
+          : null;
+
+        return {
+          ...order,
+          trackingId: tracking?.id ?? null,
+          trackingAwbNumber: tracking?.awbNumber ?? null,
+          trackingOrderId: tracking?.orderId ?? null,
+          trackingLastName: tracking?.lastName ?? null,
+          trackingCarrier: tracking?.carrier ?? null,
+          trackingCurrentStatusDesc: tracking?.currentStatusDesc ?? null,
+          trackingExtraFields: tracking?.extraFields ?? null,
+          trackingScans: tracking?.scans ?? null,
+          trackingCurrentStatus: tracking?.currentStatus ?? null,
+        };
+      });
+
       return {
         orders: mergedData,
         totalOrderCount,

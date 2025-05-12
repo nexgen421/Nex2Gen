@@ -292,6 +292,7 @@ const OrdersTable: React.FC = () => {
     window.history.pushState({}, "", url);
   };
 
+  console.log(data.orders);
   return (
     <TooltipProvider>
       <Card className="w-full">
