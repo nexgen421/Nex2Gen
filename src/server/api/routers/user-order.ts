@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { env } from "~/env";
 import { TRPCError } from "@trpc/server";
-import { truncate } from "node:fs";
+// import { truncate } from "node:fs";
 
 const userOrderRouter = createTRPCRouter({
   getOrders: protectedProcedure
@@ -117,7 +117,7 @@ const userOrderRouter = createTRPCRouter({
       const orders = await ctx.db.order.findMany({
         where,
         take: limit + 1,
-        skip: cursor,
+        cursor: cursor ? { id: cursor } : undefined,
         orderBy: { orderDate: "desc" },
         select: {
           id: true,
@@ -166,11 +166,10 @@ const userOrderRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: typeof cursor | undefined = undefined;
+      let nextCursor: string | undefined = undefined;
       if (orders.length > limit) {
-        // Don't know what is the use of this
         const nextItem = orders.pop();
-        nextCursor = orders.length;
+        nextCursor = nextItem!.id;
       }
 
       return {

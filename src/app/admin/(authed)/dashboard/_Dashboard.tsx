@@ -28,6 +28,7 @@ const Dashboard: React.FC = () => {
   const router = useRouter();
   const { data, isLoading } =
     api.adminDashboard.getAdminDashboardDetails.useQuery();
+  console.log(data);
 
   if (isLoading) return <Loading />;
 
