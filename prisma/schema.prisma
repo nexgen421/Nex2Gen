@@ -1,57 +1,76 @@
+// Generators
 generator client {
   provider = "prisma-client-js"
   seed     = "prisma/seed.ts"
 }
 
+// Database
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Admin {
-  id             String            @id @default(cuid())
-  name           String
-  email          String            @unique
-  emailVerified  DateTime?
-  image          String?
-  password       String
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  approved       Boolean           @default(false)
-  isOwner        Boolean           @default(false)
-  mobile         String
-  shipments      PrivateShipment[]
-  supportTickets SupportTicket[]
-
-  @@index([email])
-  @@index([approved])
+// ENUMS
+enum CourierType {
+  DELHIVERY
+  ECOMEXPRESS
+  XPRESSBEES
+  SHADOWFAX
 }
 
-model DefaultRate {
-  id                 String   @id @default(uuid())
-  halfKgPrice        Float
-  oneKgPrice         Float
-  twoKgPrice         Float
-  threeKgPrice       Float
-  fiveKgPrice        Float
-  sevenKgPrice       Float
-  tenKgPrice         Float
-  twelveKgPrice      Float
-  fifteenKgPrice     Float
-  seventeenKgPrice   Float
-  twentyKgPrice      Float
-  twentyTwoKgPrice   Float
-  twentyFiveKgPrice  Float
-  twentyEightKgPrice Float
-  thirtyKgPrice      Float
-  thirtyFiveKgPrice  Float
-  fortyKgPrice       Float
-  fortyFiveKgPrice   Float
-  fiftyKgPrice       Float
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+enum CourierRole {
+  PICKUP_BOY_1
+  PICKUP_BOY_2
+  PICKUP_BOY_3
+  PICKUP_BOY_4
+  HUB_INCHARGE
+  ZONAL_SALES_MANAGER
 }
 
+enum TicketStatus {
+  CLOSED
+  RESOLVED
+  OPEN
+}
+
+enum BankAccountType {
+  CURRENT
+  SAVINGS
+}
+enum TransactionStatus {
+  SUCCESS
+  FAIL
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
+enum OrderPaymentMode {
+  COD
+  PREPAID
+}
+
+enum OrderStatus {
+  BOOKED
+  READY_TO_SHIP
+  CANCELLED
+}
+
+enum ShipmentStatus {
+  INFORECEIVED
+  TRANSIT
+  PICKUP
+  UNDELIVERED
+  DELIVERED
+  EXCEPTION
+  EXPIRED
+  NOTFOUND
+  PENDING
+}
+
+// User Management
 model User {
   id                      String                   @id @default(cuid())
   name                    String
@@ -78,72 +97,23 @@ model User {
   @@index([isApproved, isKycSubmitted])
 }
 
-model Order {
-  id                   String                @id @default(cuid())
-  orderId              Int                   @default(autoincrement())
-  orderDate            DateTime              @default(now())
-  paymentMode          OrderPaymentMode      @default(PREPAID)
-  pickupLocationId     String
-  isInsured            Boolean               @default(false)
-  orderCategory        String
-  orderValue           Float
-  productName          String
-  pickupLocation       PickupLocation        @relation(fields: [pickupLocationId], references: [id], onDelete: Cascade)
-  status               OrderStatus           @default(BOOKED)
-  userId               String
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updatedAt            DateTime              @updatedAt
-  shipment             Shipment?
-  orderPricing         OrderPricing?
-  userAwbDetails       UserAwbDetails?
-  orderPaymentDetails  OrderPaymentDetails?
-  orderAdressDetails   OrderAddressDetails?
-  orderCustomerDetails OrderCustomerDetails?
-  packageDetails       PackageDetails?
+model Admin {
+  id             String            @id @default(cuid())
+  name           String
+  email          String            @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  approved       Boolean           @default(false)
+  isOwner        Boolean           @default(false)
+  mobile         String
+  shipments      PrivateShipment[]
+  supportTickets SupportTicket[]
 
-  @@index([userId])
-  @@index([orderId])
-  @@index([orderDate])
-  @@index([status])
-  @@index([pickupLocationId])
-}
-
-model CourierContacts {
-  id       String                  @id @default(uuid())
-  userId   String                  @unique
-  user     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contacts CourierContactDetails[]
-
-  @@index([userId])
-}
-
-model CourierContactDetails {
-  id                String          @id @default(uuid())
-  courierType       CourierType
-  role              CourierRole
-  name              String
-  phone             String
-  courierContacts   CourierContacts @relation(fields: [courierContactsId], references: [id], onDelete: Cascade)
-  courierContactsId String
-
-  @@index([courierType])
-  @@index([role])
-}
-
-enum CourierType {
-  DELHIVERY
-  ECOMEXPRESS
-  XPRESSBEES
-  SHADOWFAX
-}
-
-enum CourierRole {
-  PICKUP_BOY_1
-  PICKUP_BOY_2
-  PICKUP_BOY_3
-  PICKUP_BOY_4
-  HUB_INCHARGE
-  ZONAL_SALES_MANAGER
+  @@index([email])
+  @@index([approved])
 }
 
 model UserVerificationDetails {
@@ -151,105 +121,6 @@ model UserVerificationDetails {
   userId String  @unique
   user   User    @relation(references: [id], fields: [userId], onDelete: Cascade)
   token  String?
-}
-
-model RateList {
-  id                 String @id @default(uuid())
-  userId             String @unique
-  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  halfKgPrice        Float
-  oneKgPrice         Float
-  twoKgPrice         Float
-  threeKgPrice       Float
-  fiveKgPrice        Float
-  sevenKgPrice       Float
-  tenKgPrice         Float
-  twelveKgPrice      Float
-  fifteenKgPrice     Float
-  seventeenKgPrice   Float
-  twentyKgPrice      Float
-  twentyTwoKgPrice   Float
-  twentyFiveKgPrice  Float
-  twentyEightKgPrice Float
-  thirtyKgPrice      Float
-  thirtyFiveKgPrice  Float
-  fortyKgPrice       Float
-  fortyFiveKgPrice   Float
-  fiftyKgPrice       Float
-
-  @@index([userId])
-}
-
-enum TicketStatus {
-  CLOSED
-  RESOLVED
-  OPEN
-}
-
-model SupportTicket {
-  id                 Int                  @id @default(autoincrement())
-  userAwbNumber      Int?
-  userAwbDetails     UserAwbDetails?      @relation(fields: [userAwbNumber], references: [id], onDelete: Cascade)
-  supportSubReasonId Int
-  reason             SupportSubReason     @relation(fields: [supportSubReasonId], references: [id], onDelete: Cascade)
-  ticketStatus       TicketStatus
-  issue              String
-  userId             String
-  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  timestamp          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  intervenerId       String?
-  intervener         Admin?               @relation(fields: [intervenerId], references: [id], onDelete: SetNull)
-  conversation       SupportConversation?
-
-  @@index([userAwbNumber])
-  @@index([supportSubReasonId])
-  @@index([userId])
-  @@index([ticketStatus])
-  @@index([timestamp])
-}
-
-model SupportConversation {
-  id              Int           @id @default(autoincrement())
-  supportTicketId Int           @unique
-  supportTicket   SupportTicket @relation(fields: [supportTicketId], references: [id], onDelete: Cascade)
-  messages        Message[]
-
-  @@index([supportTicketId])
-}
-
-model Message {
-  id             Int                 @id @default(autoincrement())
-  conversationId Int
-  conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  content        String
-  senderId       String
-  sentAt         DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-
-  @@index([conversationId])
-  @@index([senderId])
-  @@index([sentAt])
-}
-
-model SupportReason {
-  id                Int                @id @default(autoincrement())
-  title             String
-  description       String
-  supportSubReasons SupportSubReason[]
-
-  @@index([title])
-}
-
-model SupportSubReason {
-  id              Int             @id @default(autoincrement())
-  reason          String
-  description     String
-  supportReasonId Int
-  supportReason   SupportReason   @relation(fields: [supportReasonId], references: [id], onDelete: Cascade)
-  supportTickets  SupportTicket[]
-
-  @@index([supportReasonId])
 }
 
 model KycDetails {
@@ -289,11 +160,6 @@ model PanInfo {
   @@index([kycDetailsId])
 }
 
-enum BankAccountType {
-  CURRENT
-  SAVINGS
-}
-
 model CompanyInfo {
   id                   Int        @id @default(autoincrement())
   companyName          String
@@ -309,86 +175,35 @@ model CompanyInfo {
   @@index([companyName])
 }
 
-model Wallet {
-  id             String          @id @default(uuid())
-  userId         String          @unique
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currentBalance Float           @default(0)
-  transactions   Transaction[]
-  walletRequests WalletRequest[]
-  refundRequest  RefundRequest[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+// Order and Shipment
+model Order {
+  id                   String                @id @default(cuid())
+  orderId              Int                   @default(autoincrement())
+  orderDate            DateTime              @default(now())
+  paymentMode          OrderPaymentMode      @default(PREPAID)
+  isInsured            Boolean               @default(false)
+  orderCategory        String
+  orderValue           Float
+  productName          String
+  pickupLocationId     String
+  pickupLocation       PickupLocation        @relation(fields: [pickupLocationId], references: [id], onDelete: Cascade)
+  status               OrderStatus           @default(BOOKED)
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt            DateTime              @updatedAt
+  shipment             Shipment?
+  orderPricing         OrderPricing?
+  userAwbDetails       UserAwbDetails?
+  orderPaymentDetails  OrderPaymentDetails?
+  orderAdressDetails   OrderAddressDetails?
+  orderCustomerDetails OrderCustomerDetails?
+  packageDetails       PackageDetails?
 
   @@index([userId])
-}
-
-model RefundRequest {
-  id       String  @id @default(uuid())
-  walletId String
-  wallet   Wallet  @relation(references: [id], fields: [walletId], onDelete: Cascade, onUpdate: Cascade)
-  amount   Float
-  success  Boolean @default(false)
-}
-
-enum TransactionStatus {
-  SUCCESS
-  FAIL
-}
-
-enum TransactionType {
-  DEBIT
-  CREDIT
-}
-
-model OrderPaymentDetails {
-  id          String       @id @default(uuid())
-  orderId     String       @unique
-  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  transaction Transaction?
-
   @@index([orderId])
-}
-
-model Transaction {
-  id                    Int                  @id @default(autoincrement())
-  status                TransactionStatus
-  amount                Float
-  type                  TransactionType      @default(DEBIT)
-  reason                String
-  walletId              String?
-  walletReferenceId     String?
-  wallet                Wallet?              @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  orderPaymentDetailsId String?              @unique
-  orderPaymentDetails   OrderPaymentDetails? @relation(fields: [orderPaymentDetailsId], references: [id], onDelete: SetNull)
-  createdAt             DateTime             @default(now())
-
-  @@index([walletId])
-  @@index([status, type])
-  @@index([createdAt])
-}
-
-enum OrderPaymentMode {
-  COD
-  PREPAID
-}
-
-enum OrderStatus {
-  BOOKED
-  READY_TO_SHIP
-  CANCELLED
-}
-
-enum ShipmentStatus {
-  INFORECEIVED
-  TRANSIT
-  PICKUP
-  UNDELIVERED
-  DELIVERED
-  EXCEPTION
-  EXPIRED
-  NOTFOUND
-  PENDING
+  @@index([orderDate])
+  @@index([status])
+  @@index([pickupLocationId])
 }
 
 model OrderAddressDetails {
@@ -425,37 +240,6 @@ model PackageDetails {
   order          Order  @relation(references: [id], fields: [orderId], onDelete: Cascade)
 
   @@index([id])
-}
-
-model UserAwbDetails {
-  id             Int             @id @default(autoincrement())
-  awbNumber      Int             @unique @default(autoincrement())
-  orderId        String          @unique
-  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  supportTickets SupportTicket[]
-
-  @@index([awbNumber])
-  @@index([orderId])
-}
-
-model PickupLocation {
-  id             String   @id @default(uuid())
-  name           String
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pincode        Int
-  address        String
-  famousLandmark String?
-  state          String
-  city           String
-  contactName    String
-  mobileNumber   String
-  orders         Order[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@index([userId])
-  @@index([pincode, city, state])
 }
 
 model Shipment {
@@ -508,6 +292,17 @@ model Tracking {
   @@index([awbNumber])
 }
 
+model UserAwbDetails {
+  id             Int             @id @default(autoincrement())
+  awbNumber      Int             @unique @default(autoincrement())
+  orderId        String          @unique
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  supportTickets SupportTicket[]
+
+  @@index([awbNumber])
+  @@index([orderId])
+}
+
 model OrderPricing {
   id      String @id @default(uuid())
   orderId String @unique
@@ -517,19 +312,46 @@ model OrderPricing {
   @@index([orderId])
 }
 
-model PrivateShipment {
-  id           String   @id @default(cuid())
-  awbNumber    String   @unique
-  adminId      String
-  user         Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  provider     String
-  orderPricing Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+// Financials
+model Wallet {
+  id             String          @id @default(uuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentBalance Float           @default(0)
+  transactions   Transaction[]
+  walletRequests WalletRequest[]
+  refundRequest  RefundRequest[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
-  @@index([adminId])
-  @@index([awbNumber])
-  @@index([provider])
+  @@index([userId])
+}
+
+model Transaction {
+  id                    Int                  @id @default(autoincrement())
+  status                TransactionStatus
+  amount                Float
+  type                  TransactionType      @default(DEBIT)
+  reason                String
+  walletId              String?
+  walletReferenceId     String?
+  wallet                Wallet?              @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  orderPaymentDetailsId String?              @unique
+  orderPaymentDetails   OrderPaymentDetails? @relation(fields: [orderPaymentDetailsId], references: [id], onDelete: SetNull)
+  createdAt             DateTime             @default(now())
+
+  @@index([walletId])
+  @@index([status, type])
+  @@index([createdAt])
+}
+
+model OrderPaymentDetails {
+  id          String       @id @default(uuid())
+  orderId     String       @unique
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  transaction Transaction?
+
+  @@index([orderId])
 }
 
 model WalletRequest {
@@ -548,16 +370,140 @@ model WalletRequest {
   @@index([createdAt])
 }
 
-model UserPromoCode {
-  id          Int       @id @default(autoincrement())
-  userId      String
-  user        User      @relation(references: [id], fields: [userId], onDelete: Cascade, onUpdate: Cascade)
-  promoCodeId Int
-  promoCode   PromoCode @relation(references: [id], fields: [promoCodeId], onDelete: Cascade, onUpdate: Cascade)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model RefundRequest {
+  id       String  @id @default(uuid())
+  walletId String
+  wallet   Wallet  @relation(references: [id], fields: [walletId], onDelete: Cascade, onUpdate: Cascade)
+  amount   Float
+  success  Boolean @default(false)
 }
 
+// Support
+model SupportTicket {
+  id                 Int                  @id @default(autoincrement())
+  userAwbNumber      Int?
+  userAwbDetails     UserAwbDetails?      @relation(fields: [userAwbNumber], references: [id], onDelete: Cascade)
+  supportSubReasonId Int
+  reason             SupportSubReason     @relation(fields: [supportSubReasonId], references: [id], onDelete: Cascade)
+  ticketStatus       TicketStatus
+  issue              String
+  userId             String
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timestamp          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  intervenerId       String?
+  intervener         Admin?               @relation(fields: [intervenerId], references: [id], onDelete: SetNull)
+  conversation       SupportConversation?
+
+  @@index([userAwbNumber])
+  @@index([supportSubReasonId])
+  @@index([userId])
+  @@index([ticketStatus])
+  @@index([timestamp])
+}
+
+model SupportReason {
+  id                Int                @id @default(autoincrement())
+  title             String
+  description       String
+  supportSubReasons SupportSubReason[]
+
+  @@index([title])
+}
+
+model SupportSubReason {
+  id              Int             @id @default(autoincrement())
+  reason          String
+  description     String
+  supportReasonId Int
+  supportReason   SupportReason   @relation(fields: [supportReasonId], references: [id], onDelete: Cascade)
+  supportTickets  SupportTicket[]
+
+  @@index([supportReasonId])
+}
+
+model SupportConversation {
+  id              Int           @id @default(autoincrement())
+  supportTicketId Int           @unique
+  supportTicket   SupportTicket @relation(fields: [supportTicketId], references: [id], onDelete: Cascade)
+  messages        Message[]
+
+  @@index([supportTicketId])
+}
+
+model Message {
+  id             Int                 @id @default(autoincrement())
+  conversationId Int
+  conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  content        String
+  senderId       String
+  sentAt         DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([sentAt])
+}
+
+// Courier and Logistics
+model CourierContacts {
+  id       String                  @id @default(uuid())
+  userId   String                  @unique
+  user     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts CourierContactDetails[]
+
+  @@index([userId])
+}
+
+model CourierContactDetails {
+  id                String          @id @default(uuid())
+  courierType       CourierType
+  role              CourierRole
+  name              String
+  phone             String
+  courierContacts   CourierContacts @relation(fields: [courierContactsId], references: [id], onDelete: Cascade)
+  courierContactsId String
+
+  @@index([courierType])
+  @@index([role])
+}
+
+model PickupLocation {
+  id             String   @id @default(uuid())
+  name           String
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pincode        Int
+  address        String
+  famousLandmark String?
+  state          String
+  city           String
+  contactName    String
+  mobileNumber   String
+  orders         Order[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([pincode, city, state])
+}
+
+model PrivateShipment {
+  id           String   @id @default(cuid())
+  awbNumber    String   @unique
+  adminId      String
+  user         Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  provider     String
+  orderPricing Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([adminId])
+  @@index([awbNumber])
+  @@index([provider])
+}
+
+// Promotion and Rates
 model PromoCode {
   id             Int             @id @default(autoincrement())
   code           String          @unique
@@ -568,4 +514,67 @@ model PromoCode {
   userPromoCodes UserPromoCode[]
 
   @@index([isActive])
+}
+
+
+model UserPromoCode {
+  id          Int       @id @default(autoincrement())
+  userId      String
+  user        User      @relation(references: [id], fields: [userId], onDelete: Cascade, onUpdate: Cascade)
+  promoCodeId Int
+  promoCode   PromoCode @relation(references: [id], fields: [promoCodeId], onDelete: Cascade, onUpdate: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model RateList {
+  id                 String @id @default(uuid())
+  userId             String @unique
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  halfKgPrice        Float
+  oneKgPrice         Float
+  twoKgPrice         Float
+  threeKgPrice       Float
+  fiveKgPrice        Float
+  sevenKgPrice       Float
+  tenKgPrice         Float
+  twelveKgPrice      Float
+  fifteenKgPrice     Float
+  seventeenKgPrice   Float
+  twentyKgPrice      Float
+  twentyTwoKgPrice   Float
+  twentyFiveKgPrice  Float
+  twentyEightKgPrice Float
+  thirtyKgPrice      Float
+  thirtyFiveKgPrice  Float
+  fortyKgPrice       Float
+  fortyFiveKgPrice   Float
+  fiftyKgPrice       Float
+
+  @@index([userId])
+}
+
+model DefaultRate {
+  id                 String   @id @default(uuid())
+  halfKgPrice        Float
+  oneKgPrice         Float
+  twoKgPrice         Float
+  threeKgPrice       Float
+  fiveKgPrice        Float
+  sevenKgPrice       Float
+  tenKgPrice         Float
+  twelveKgPrice      Float
+  fifteenKgPrice     Float
+  seventeenKgPrice   Float
+  twentyKgPrice      Float
+  twentyTwoKgPrice   Float
+  twentyFiveKgPrice  Float
+  twentyEightKgPrice Float
+  thirtyKgPrice      Float
+  thirtyFiveKgPrice  Float
+  fortyKgPrice       Float
+  fortyFiveKgPrice   Float
+  fiftyKgPrice       Float
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
