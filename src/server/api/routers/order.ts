@@ -1037,13 +1037,16 @@ const orderRouter = createTRPCRouter({
         });
       }
 
+      let balance = wallet.currentBalance;
+      if (order.orderPaymentDetails?.transaction?.amount) {
+        balance += order.orderPaymentDetails.transaction.amount;
+      }
+
       // 2. Separate the balance update and transaction creation
       await ctx.db.wallet.update({
         where: { id: wallet.id },
         data: {
-          currentBalance:
-            wallet.currentBalance +
-            order.orderPaymentDetails?.transaction?.amount,
+          currentBalance: balance,
         },
       });
 
