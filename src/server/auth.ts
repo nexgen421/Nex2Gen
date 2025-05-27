@@ -113,12 +113,9 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
           } as User;
         } catch (error) {
-          console.log(error);
-
           if (error instanceof ZodError) {
             throw new Error(error.message);
           } else {
-            console.log(error);
             throw error;
           }
         }

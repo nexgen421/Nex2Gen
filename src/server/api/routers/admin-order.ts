@@ -27,14 +27,14 @@ const adminOrderRouter = createTRPCRouter({
           productName: true,
           userAwbDetails: {
             select: {
-              awbNumber: true
-            }
+              awbNumber: true,
+            },
           },
           orderCustomerDetails: {
             select: {
               customerMobile: true,
-              customerName: true
-            }
+              customerName: true,
+            },
           },
           user: {
             select: {
@@ -83,7 +83,10 @@ const adminOrderRouter = createTRPCRouter({
       }
 
       // const tracker = new Tracker(env.TRACKINGMORE_API_KEY);
-      const shipWayTracker = new ShipWayTracker(env.SHIPWAY_USERNAME, env.SHIPWAY_PASSWORD);
+      const shipWayTracker = new ShipWayTracker(
+        env.SHIPWAY_USERNAME,
+        env.SHIPWAY_PASSWORD,
+      );
 
       try {
         // const response = await tracker.trackings.createTracking({
@@ -106,7 +109,7 @@ const adminOrderRouter = createTRPCRouter({
           shipment_type: "1",
           company: order?.user?.kycDetails?.companyInfo?.companyName,
         });
-        console.log("93 -------- response =-=-=->", response)
+        // console.log("93 -------- response =-=-=->", response)
 
         if (!response) {
           throw new TRPCError({
@@ -115,22 +118,25 @@ const adminOrderRouter = createTRPCRouter({
           });
         }
 
-        if (response.status !== "Success" && response.message !== 'Order is already pushed') {
+        if (
+          response.status !== "Success" &&
+          response.message !== "Order is already pushed"
+        ) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: response.message,
           });
         }
         // TODO: Remove this console.log after testing
-        console.log("TRACKINGMORE RESPONSE CREATED", response);
+        // console.log("TRACKINGMORE RESPONSE CREATED", response);
         await ctx.db?.tracking.create({
           data: {
             awbNumber: input.awbNumber,
             orderId: order?.userAwbDetails?.awbNumber
               ? String(order?.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET)
               : undefined,
-          }
-        })
+          },
+        });
 
         await ctx.db.order.update({
           where: {
@@ -150,7 +156,6 @@ const adminOrderRouter = createTRPCRouter({
             },
           },
         });
-
       } catch (error) {
         console.log(error);
         throw error;
@@ -190,7 +195,7 @@ const adminOrderRouter = createTRPCRouter({
         orderId: {
           contains: input.awbNumber,
           mode: "insensitive",
-        }
+        },
       };
 
       const tracking_orders = await ctx.db.tracking.findMany({
@@ -228,32 +233,32 @@ const adminOrderRouter = createTRPCRouter({
                   userId: true,
                   // mobile:true
                   // CompanyInfo:true
-                  companyInfo: true
+                  companyInfo: true,
                 },
-              }
+              },
               // mobile:true
             },
             // include: {
 
             // }
-          }
+          },
           // orderPaymentDetails: true,
         },
         orderBy: {
           orderDate: "desc",
         },
       });
-      const trackingCount = await ctx.db.tracking.count()
+      const trackingCount = await ctx.db.tracking.count();
       console.log("trackingCount", trackingCount);
-      
+
       const totalOrderCount = await ctx.db.order.count({
         where: {
           // userId: ctx.session.user.id,
         },
       });
       const menupulated_orders = orders.map((order, i) => {
-        console.log(i, order)
-        return ({
+        console.log(i, order);
+        return {
           ...order,
           userAwbDetails: {
             ...order.userAwbDetails,
@@ -261,19 +266,21 @@ const adminOrderRouter = createTRPCRouter({
               ? order.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
               : undefined,
           },
-        })
-      })
+        };
+      });
       // console.log("tracking_orders", tracking_orders);
 
-      const mergedData = menupulated_orders.map(order => {
-        console.log(String(order.userAwbDetails?.awbNumber))
-        const tracking = tracking_orders.find(track => String(track.orderId) === String(order.userAwbDetails?.awbNumber));
+      const mergedData = menupulated_orders.map((order) => {
+        console.log(String(order.userAwbDetails?.awbNumber));
+        const tracking = tracking_orders.find(
+          (track) =>
+            String(track.orderId) === String(order.userAwbDetails?.awbNumber),
+        );
         if (tracking) {
-          console.log({ ...order, ...tracking })
-          return { ...order, ...tracking }
-        }
-        else {
-          return
+          console.log({ ...order, ...tracking });
+          return { ...order, ...tracking };
+        } else {
+          return;
         }
       });
       return {

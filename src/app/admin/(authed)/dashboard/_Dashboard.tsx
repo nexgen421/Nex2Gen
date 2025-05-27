@@ -1,5 +1,4 @@
 "use client";
-
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   ClipboardCheckIcon,
@@ -62,6 +61,12 @@ const Dashboard: React.FC = () => {
                 <p>{data?.shipmentCount.infoReceived}</p>
               </CustomCard>
               <h6 className="text-xs">Info Received</h6>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <CustomCard className="flex h-12 w-12 items-center justify-center bg-white">
+                <p>{data?.shipmentCount.pending}</p>
+              </CustomCard>
+              <h6 className="text-xs">Courier Assign Pending</h6>
             </div>
             <div className="flex flex-col items-center gap-2">
               <CustomCard className="flex h-12 w-12 items-center justify-center bg-white">

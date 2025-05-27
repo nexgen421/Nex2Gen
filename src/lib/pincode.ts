@@ -30,7 +30,6 @@ export const getCityState = async (pincode: number | null) => {
     const response = await axios.get<PostOfficeResponse[]>(
       NEXT_PUBLIC_PINCODE_URL + `/${pincode}`,
     );
-    console.log(response);
     if (
       response.data.length === 0 ||
       response.data[0]?.PostOffice === null ||
@@ -38,12 +37,10 @@ export const getCityState = async (pincode: number | null) => {
     ) {
       throw new Error("Not Found");
     } else {
-      console.log(response);
       const data = {
         city: response.data[0].PostOffice[0]?.District,
         state: response.data[0].PostOffice[0]?.State,
       };
-      console.log(data);
       return data;
     }
   } catch (error) {

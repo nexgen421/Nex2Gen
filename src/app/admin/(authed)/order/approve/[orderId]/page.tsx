@@ -54,7 +54,6 @@ const Page = ({ params }: { params: { orderId: string } }) => {
   }, [awbNumber, setValue]);
 
   const detectCourierProvider = (awb: string) => {
-    // These are example patterns. You should replace them with actual patterns used by each courier.
     const patterns = {
       "2": /^1490[0-9]{11}$/,
       "6": /^[0-9]{10}$/,
@@ -78,12 +77,14 @@ const Page = ({ params }: { params: { orderId: string } }) => {
     }
     await mutateAsync({
       awbNumber: obj.awbNumber,
-      courierProvider: courierProvider as string,
+      courierProvider: courierProvider,
       dbOrderId: orderId,
     });
 
     toast.success("Order Approved Successfully");
-    router.push(`/admin/order/requests/order-request/${data?.pickupLocation?.userId}`);
+    router.push(
+      `/admin/order/requests/order-request/${data?.pickupLocation?.userId}`,
+    );
   };
 
   if (isLoading) {
@@ -98,7 +99,9 @@ const Page = ({ params }: { params: { orderId: string } }) => {
     e.preventDefault();
     await rejectOrder({ orderId: orderId });
     // router.push("/admin/order/requests");
-    router.push(`/admin/order/requests/order-request/${data?.pickupLocation?.userId}`);
+    router.push(
+      `/admin/order/requests/order-request/${data?.pickupLocation?.userId}`,
+    );
     toast.success("Order Rejected Successfully");
   };
 

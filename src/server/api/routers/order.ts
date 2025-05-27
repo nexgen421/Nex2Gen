@@ -599,7 +599,7 @@ const orderRouter = createTRPCRouter({
           });
         }
         // TODO: Remove this console.log after testing
-        console.log("TRACKINGMORE RESPONSE CREATED", response.data);
+        // console.log("TRACKINGMORE RESPONSE CREATED", response.data);
 
         await ctx.db.order.update({
           where: {
@@ -1041,9 +1041,9 @@ const orderRouter = createTRPCRouter({
       await ctx.db.wallet.update({
         where: { id: wallet.id },
         data: {
-          currentBalance: {
-            increment: order.orderPaymentDetails?.transaction?.amount,
-          },
+          currentBalance:
+            wallet.currentBalance +
+            order.orderPaymentDetails?.transaction?.amount,
         },
       });
 
