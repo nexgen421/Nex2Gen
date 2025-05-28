@@ -272,13 +272,9 @@ const adminOrderRouter = createTRPCRouter({
           (track) =>
             String(track.orderId) === String(order.userAwbDetails?.awbNumber),
         );
-        if (tracking) {
-          console.log({ ...order, ...tracking });
-          return { ...order, ...tracking };
-        } else {
-          return;
-        }
+        return { ...order, ...(tracking ?? {}) };
       });
+
       return {
         orders: mergedData,
         totalOrderCount,
