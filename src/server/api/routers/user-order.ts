@@ -3,13 +3,12 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { env } from "~/env";
 import { TRPCError } from "@trpc/server";
-// import { truncate } from "node:fs";
 
 const userOrderRouter = createTRPCRouter({
   getOrders: protectedProcedure
     .input(
       z.object({
-        cursor: z.number().optional(),
+        cursor: z.string().optional(),
         limit: z.number().min(1).max(100).default(10),
         shipmentType: z
           .enum([
@@ -222,7 +221,7 @@ const userOrderRouter = createTRPCRouter({
       pickupPendingCount: 0,
       inTransitCount: 0,
       deliveredCount: 0,
-      undeliverdCount: 0,
+      undeliveredCount: 0,
       exceptionCount: 0,
       pickupScheduledCount: 0,
     };
@@ -242,7 +241,7 @@ const userOrderRouter = createTRPCRouter({
           shipmentCount.deliveredCount = count._count.status;
           break;
         case "UNDELIVERED":
-          shipmentCount.undeliverdCount = count._count.status;
+          shipmentCount.undeliveredCount = count._count.status;
           break;
         case "EXCEPTION":
           shipmentCount.exceptionCount = count._count.status;
@@ -308,8 +307,6 @@ const userOrderRouter = createTRPCRouter({
 
       const tracking_orders = await ctx.db.tracking.findMany({
         where: newBaseWhere,
-        // skip: (input.cursor ?? 0) * input.limit,
-        // take: input.limit,
         orderBy: { id: "desc" },
         select: {
           id: true,
@@ -339,30 +336,19 @@ const userOrderRouter = createTRPCRouter({
                 select: {
                   id: true,
                   userId: true,
-                  // mobile:true
-                  // CompanyInfo:true
                   companyInfo: true,
                 },
               },
-              // mobile:true
             },
-            // include: {
-
-            // }
           },
         },
         orderBy: {
           orderDate: "desc",
         },
       });
-      const trackingCount = await ctx.db.tracking.count();
-      console.log("trackingCount", trackingCount);
 
       const totalOrderCount = await ctx.db.order.count({
         where,
-        // where: {
-        //   userId: ctx.session.user.id,
-        // },
       });
       const menupulated_orders = orders.map((order, i) => {
         console.log(i, order);

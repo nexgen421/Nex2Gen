@@ -68,7 +68,7 @@ const UserOrderListTable = () => {
     (params.get("status") as ShipmentStatus) ?? "BOOKED",
   );
   const { data, isLoading } = api.userOrder.getShipmentCount.useQuery();
-  console.log(data);
+
   if (isLoading) {
     return <Loading />;
   }
@@ -96,7 +96,7 @@ const UserOrderListTable = () => {
           Pickup Scheduled ({data?.shipmentCount.pickupScheduledCount})
         </TabsTrigger>
         <TabsTrigger value="UNDELIVERED">
-          Undelivered ({data?.shipmentCount.undeliverdCount})
+          Undelivered ({data?.shipmentCount.undeliveredCount})
         </TabsTrigger>
         <TabsTrigger value="EXCEPTION">
           Exception ({data?.shipmentCount.exceptionCount})
@@ -172,8 +172,6 @@ const OrderListTable = ({ shipmentType }: { shipmentType: ShipmentStatus }) => {
   if (isError) return <div>Error loading orders</div>;
 
   const orders = data?.pages.flatMap((page) => page.items) ?? [];
-  console.log(data);
-  // console.log(orders);
 
   const DeleteDialog = ({ orderId }: { orderId: string }) => {
     const handleDeleteOrder = (e: React.MouseEvent<HTMLButtonElement>) => {
