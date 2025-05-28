@@ -350,13 +350,13 @@ const OrdersTable: React.FC = () => {
                             : "-"}
                         </TableCell>
                         <TableCell className="font-bold capitalize">
-                          {order.carrier ? order.carrier : "-"}
+                          {order.trackingCarrier ? order.trackingCarrier : "-"}
                         </TableCell>
                         <TableCell>
                           <div
                             className={`${getStatusColor(order.status as OrderStatus | ShipmentStatus)} mx-auto w-fit rounded-full px-3 py-[2px] text-xs font-semibold capitalize text-white`}
                           >
-                            {order.currentStatusDesc}
+                            {order.status}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -369,51 +369,6 @@ const OrdersTable: React.FC = () => {
 
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-center">
-              {/* <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        handlePageChange(Math.max(currentPage - 1, 1))
-                      }
-                      className={`${
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }`}
-                      aria-disabled={currentPage === 1}
-                    />
-                  </PaginationItem>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          onClick={() => handlePageChange(page)}
-                          isActive={currentPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        handlePageChange(Math.min(currentPage + 1, totalPages))
-                      }
-                      className={`${
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }`}
-                      aria-disabled={currentPage === totalPages}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination> */}
               <PaginationBtn
                 handleChange={handlePageChange}
                 totalPages={totalPages}
