@@ -1,13 +1,12 @@
-import { ShipWayTracker, Tracker } from "~/lib/tracking-more";
+import { ShipWayTracker } from "~/lib/tracking-more";
 // import { ShipWayTracking } from "~/lib/tracking-more";
 import { createTRPCRouter, ultraProtectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { type ShipmentStatus } from "@prisma/client";
-import { type TrackingItem } from "~/lib/tracking-more/modules/types";
 import { env } from "~/env";
 import { type Prisma } from "@prisma/client";
-import { RiContrastDropLine } from "react-icons/ri";
+
 const adminOrderRouter = createTRPCRouter({
   approveOrder: ultraProtectedProcedure
     .input(
@@ -82,25 +81,27 @@ const adminOrderRouter = createTRPCRouter({
         }
       }
 
-      // const tracker = new Tracker(env.TRACKINGMORE_API_KEY);
       const shipWayTracker = new ShipWayTracker(
         env.SHIPWAY_USERNAME,
         env.SHIPWAY_PASSWORD,
       );
+      const computedOrderId = "100000";
+      if (
+        order?.userAwbDetails?.awbNumber == null ||
+        isNaN(+env.USER_AWB_OFFSET)
+      ) {
+        const computedOrderId = String(env.USER_AWB_OFFSET);
+      } else {
+        const computedOrderId = String(
+          order.userAwbDetails.awbNumber + Number(env.USER_AWB_OFFSET),
+        );
+      }
 
       try {
-        // const response = await tracker.trackings.createTracking({
-        //   courier_code: input.courierProvider,
-        //   tracking_number: input.awbNumber,
-        //   customer_name: `${order?.user.name} - ${order?.user?.kycDetails?.companyInfo?.companyName}`,
-        // });
-
         const response = await shipWayTracker.trackings.createTracking({
           carrier_id: input.courierProvider,
           awb: input.awbNumber,
-          order_id: order?.userAwbDetails?.awbNumber
-            ? order?.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET
-            : undefined,
+          order_id: computedOrderId,
           first_name: order?.user.name,
           last_name: order?.orderCustomerDetails?.customerName,
           email: order?.user.email,
@@ -109,7 +110,6 @@ const adminOrderRouter = createTRPCRouter({
           shipment_type: "1",
           company: order?.user?.kycDetails?.companyInfo?.companyName,
         });
-        // console.log("93 -------- response =-=-=->", response)
 
         if (!response) {
           throw new TRPCError({
@@ -127,14 +127,11 @@ const adminOrderRouter = createTRPCRouter({
             message: response.message,
           });
         }
-        // TODO: Remove this console.log after testing
-        // console.log("TRACKINGMORE RESPONSE CREATED", response);
+
         await ctx.db?.tracking.create({
           data: {
             awbNumber: input.awbNumber,
-            orderId: order?.userAwbDetails?.awbNumber
-              ? String(order?.userAwbDetails?.awbNumber + +env.USER_AWB_OFFSET)
-              : undefined,
+            orderId: computedOrderId,
           },
         });
 
