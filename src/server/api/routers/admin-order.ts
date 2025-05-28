@@ -268,7 +268,6 @@ const adminOrderRouter = createTRPCRouter({
       // console.log("tracking_orders", tracking_orders);
 
       const mergedData = menupulated_orders.map((order) => {
-        console.log(String(order.userAwbDetails?.awbNumber));
         const tracking = tracking_orders.find(
           (track) =>
             String(track.orderId) === String(order.userAwbDetails?.awbNumber),

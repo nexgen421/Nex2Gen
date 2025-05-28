@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Input } from "~/components/ui/input";
-import { Button, buttonVariants } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import {
   Popover,
@@ -20,14 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationItem,
-//   PaginationLink,
-//   PaginationNext,
-//   PaginationPrevious,
-// } from "~/components/ui/pagination";
+
 import {
   Card,
   CardContent,
@@ -45,32 +38,9 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Label } from "~/components/ui/label";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "~/components/ui/tooltip";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import moment from "moment";
-// import { SUBSTATUS } from "~/lib/constants";
-// import { cn } from "~/lib/utils";
 
-// interface TableCellTooltipProps {
-//   children: React.ReactNode;
-// }
-
-// const TableCellTooltip: React.FC<TableCellTooltipProps> = ({ children }) => {
-//   return (
-//     <Tooltip>
-//       <TooltipTrigger className="max-w-[200px] truncate">
-//         {children}
-//       </TooltipTrigger>
-//       <TooltipContent>{children}</TooltipContent>
-//     </Tooltip>
-//   );
-// };
-
-// Enums
 enum OrderStatus {
   BOOKED = "BOOKED",
   READY_TO_SHIP = "READY_TO_SHIP",
@@ -198,14 +168,12 @@ const OrdersTable: React.FC = () => {
   const params = useSearchParams();
   const router = useRouter();
   const [limit, setLimit] = useState<number>(10);
-  const currentPageFromUrl = +(params.get("page") ?? "0");
-  const [currentPage, setCurrentPage] = useState<number>(
-    currentPageFromUrl + 1,
-  );
+  const currentPageFromUrl = +(params.get("page") ?? "1");
+  const [currentPage, setCurrentPage] = useState<number>(currentPageFromUrl);
   const [filters, setFilters] = useState<FilterOptions>({});
 
   const { data, isLoading, error } = api.adminOrder.getAllOrdersAdmin.useQuery({
-    cursor: currentPageFromUrl,
+    cursor: currentPage,
     limit,
     ...filters,
   });
@@ -258,18 +226,10 @@ const OrdersTable: React.FC = () => {
     return statusColors[status] || "bg-gray-500";
   };
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     const url = new URL(window.location.href);
-    url.searchParams.set("page", String(page - 1));
+    url.searchParams.set("page", String(page));
     window.history.pushState({}, "", url);
   };
 
@@ -277,7 +237,7 @@ const OrdersTable: React.FC = () => {
     setFilters(newFilters);
     setCurrentPage(1);
     const url = new URL(window.location.href);
-    url.searchParams.set("page", "0");
+    url.searchParams.set("page", "1");
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value) {
         if (value instanceof Date) {
@@ -376,51 +336,6 @@ const OrdersTable: React.FC = () => {
 
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-center">
-              {/* <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        handlePageChange(Math.max(currentPage - 1, 1))
-                      }
-                      className={`${
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }`}
-                      aria-disabled={currentPage === 1}
-                    />
-                  </PaginationItem>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          onClick={() => handlePageChange(page)}
-                          isActive={currentPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        handlePageChange(Math.min(currentPage + 1, totalPages))
-                      }
-                      className={`${
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }`}
-                      aria-disabled={currentPage === totalPages}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination> */}
               <PaginationBtn
                 handleChange={handlePageChange}
                 totalPages={totalPages}
