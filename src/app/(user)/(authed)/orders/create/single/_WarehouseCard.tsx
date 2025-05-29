@@ -35,7 +35,6 @@ const SingleWarehouseCard: React.FC<SingleWarehouseCardProps> = ({
   onClickFunction,
   isActive,
 }) => {
-  console.log(warehouseDetails);
   // const {
   //   pincode,
   //   address,
@@ -81,7 +80,6 @@ const WarehouseCard: React.FC<WarehouseCardProps> = ({
   setSelectedWarehouseId,
 }) => {
   const { data, isLoading } = api.order.getAllPickupLocation.useQuery();
-  console.log("data =-=-=-=-=-=->", data);
   return (
     <Card className="min-h-[30vh] w-full">
       <CardHeader className="">

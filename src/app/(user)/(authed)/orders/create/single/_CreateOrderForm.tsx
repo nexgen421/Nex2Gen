@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Import useEffect
 import { useForm } from "react-hook-form";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -43,16 +43,36 @@ interface TOrder {
   breadth: number;
 }
 
+// Assuming the structure of the single pickup location returned by the backend
+interface SinglePickupLocation {
+  id: string;
+  pincode: string;
+  name: string; // The company name returned by your backend
+  address: string; // Add other properties your pickupLocation object might have
+  city: string;
+  state: string;
+  // ... any other fields from your pickupLocation schema
+}
+
 const CreateOrderForm = () => {
   const router = useRouter();
-  const { data, isLoading } = api.rate.getRateById.useQuery();
-  const { mutateAsync, isPending } = api.order.createOrder.useMutation();
+
+  // Renamed 'warehouses' to 'pickupLocationData' to reflect it's a single object
+  const { data: pickupLocationData, isLoading: isLoadingPickupLocation } =
+    api.order.getAllPickupLocation.useQuery();
+
+  const { mutateAsync: createOrder, isPending: isCreatingOrder } =
+    api.order.createOrder.useMutation();
+
   const {
-    register,
-    handleSubmit,
-    reset,
-    // formState: { errors },
-  } = useForm<TOrder>();
+    mutateAsync: estimateRateMutation,
+    isPending: isEstimatingRate,
+    data: estimatedRateData,
+    error: estimateRateError,
+  } = api.order.estimateRate.useMutation();
+
+  const { register, handleSubmit, reset, watch } = useForm<TOrder>();
+
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(
     null,
   );
@@ -61,20 +81,93 @@ const CreateOrderForm = () => {
   const [state, setState] = useState("");
   const [insured, setInsured] = useState<boolean>(false);
   const [productCategory, setProductCategory] = useState("");
+
+  const [physicalWeight, length, breadth, height] = watch([
+    "physicalWeight",
+    "length",
+    "breadth",
+    "height",
+  ]);
+
+  // Effect to automatically select the single pickup location when it loads
+  useEffect(() => {
+    if (pickupLocationData) {
+      setSelectedWarehouseId(pickupLocationData.id);
+    }
+  }, [pickupLocationData]);
+
   const getPincodeDetails = async (e: React.FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
       const data = await getCityState(+pincode);
-      console.log(data);
-      setCity(data?.city ?? "");
-      setState(data?.state ?? "");
+      if (data?.city && data?.state) {
+        setCity(data.city);
+        setState(data.state);
+        toast.success("Pincode details fetched successfully!");
+      } else {
+        setCity("");
+        setState("");
+        toast.error("Invalid pincode or no details found.");
+      }
     } catch (error) {
-      // toast.error(JSON.stringify(error));
+      setCity("");
+      setState("");
+      toast.error(
+        "Failed to get pincode details. Please enter a valid pincode.",
+      );
+    }
+  };
+
+  const handleEstimateRate = async () => {
+    // We don't need to check selectedWarehouseId explicitly here if we assume it's always set
+    // from the single fetched pickupLocationData, but we keep the check for safety.
+    if (
+      !pickupLocationData || // Check if the single pickup location data is available
+      !selectedWarehouseId || // This should be set by the useEffect
+      !pincode ||
+      !city ||
+      !state ||
+      physicalWeight === undefined ||
+      length === undefined ||
+      breadth === undefined ||
+      height === undefined ||
+      isNaN(physicalWeight) ||
+      isNaN(length) ||
+      isNaN(breadth) ||
+      isNaN(height) ||
+      physicalWeight <= 0 ||
+      length <= 0 ||
+      breadth <= 0 ||
+      height <= 0
+    ) {
+      toast.info(
+        "Please fill in all shipment details, ensure pickup location and pincode details are fetched to estimate rate.",
+      );
+      return;
+    }
+
+    try {
+      // Directly use the pincode from the fetched single pickup location data
+      await estimateRateMutation({
+        fromPincode: String(pickupLocationData.pincode), // Directly use the pincode
+        toPincode: pincode,
+        physicalWeight: physicalWeight,
+        shipmentLength: length,
+        shipmentBreadth: breadth,
+        shipmentHeight: height,
+        shipmentWeight: physicalWeight,
+      });
+      toast.success("Rate estimated successfully!");
+    } catch (error) {
+      if (error instanceof TRPCClientError) {
+        toast.error(`Rate estimation failed: ${error.message}`);
+      } else {
+        toast.error("Something went wrong during rate estimation.");
+      }
     }
   };
 
   const resetAllFields = () => {
-    // Reset form fields managed by react-hook-form
     reset({
       breadth: 0,
       height: 0,
@@ -90,7 +183,6 @@ const CreateOrderForm = () => {
       physicalWeight: 0,
     });
 
-    // Reset all state variables
     setSelectedWarehouseId(null);
     setPincode("");
     setCity("");
@@ -100,64 +192,56 @@ const CreateOrderForm = () => {
     router.refresh();
   };
 
-  const handleOrderCreate = async (data: TOrder) => {
-    console.log(data);
-    console.log({ insured });
-    console.log({ productCategory });
-    console.log({ selectedWarehouseId });
-
+  const handleOrderCreate = async (formData: TOrder) => {
+    // Ensure pickupLocationData is available
     if (
-      !data.customerName ||
-      !data.mobile ||
-      !data.email ||
-      !data.houseNumber ||
-      !data.streetName ||
-      !data.famousLandmark ||
-      !data.productName ||
-      !data.orderValue ||
-      !data.physicalWeight ||
-      !data.height ||
-      !data.length ||
-      !data.breadth
+      !formData.customerName ||
+      !formData.mobile ||
+      !formData.houseNumber ||
+      !formData.streetName ||
+      !formData.famousLandmark ||
+      !formData.productName ||
+      formData.orderValue === undefined ||
+      formData.physicalWeight === undefined ||
+      formData.height === undefined ||
+      formData.length === undefined ||
+      formData.breadth === undefined ||
+      !selectedWarehouseId || // Check that the ID has been set (from useEffect)
+      !pickupLocationData || // Ensure the pickup location data itself is present
+      productCategory === "" ||
+      city === "" ||
+      state === "" ||
+      isNaN(formData.orderValue) ||
+      isNaN(formData.physicalWeight) ||
+      isNaN(formData.height) ||
+      isNaN(formData.length) ||
+      isNaN(formData.breadth)
     ) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-
-    if (selectedWarehouseId === null) {
-      toast.error("Select a Warehouse!");
-      return;
-    }
-
-    if (productCategory === "") {
-      toast.error("Select a Product Category!");
-      return;
-    }
-
-    if (city === "" || state === "") {
-      toast.error("Enter a valid Pincode and hit Get Details!");
+      toast.error(
+        "Please fill in all required fields and ensure pickup location and pincode details are accurate.",
+      );
       return;
     }
 
     try {
-      await mutateAsync({
-        breadth: +data.breadth,
-        height: +data.height,
-        length: +data.length,
+      await createOrder({
+        breadth: +formData.breadth,
+        height: +formData.height,
+        length: +formData.length,
         city: city,
         state: state,
         isInsured: insured,
-        customerMobile: data.mobile,
-        houseNumber: data.houseNumber,
-        streetName: data.streetName,
-        productName: data.productName,
-        customerEmail: data.email ? data.email : "dummy@gmail.com",
-        customerName: data.customerName,
-        famousLandmark: data.famousLandmark,
+        customerMobile: formData.mobile,
+        houseNumber: formData.houseNumber,
+        streetName: formData.streetName,
+        productName: formData.productName,
+        customerEmail: formData.email ? formData.email : "dummy@gmail.com",
+        customerName: formData.customerName,
+        famousLandmark: formData.famousLandmark,
         pincode: +pincode,
-        orderValue: +data.orderValue,
-        physicalWeight: +data.physicalWeight,
-        pickupLocationId: selectedWarehouseId,
+        orderValue: +formData.orderValue,
+        physicalWeight: +formData.physicalWeight,
+        pickupLocationId: selectedWarehouseId, // This should be set by useEffect
         productCategory: productCategory,
         orderCategory: productCategory,
       });
@@ -167,27 +251,32 @@ const CreateOrderForm = () => {
       if (error instanceof TRPCClientError) {
         toast.error(error.message);
       } else {
-        console.log(error);
         toast.error("Something went wrong!");
       }
     }
   };
 
-  if (isLoading) {
+  if (isLoadingPickupLocation) {
     return <Loading />;
   }
 
-  if (!data) {
+  // If pickupLocationData is null (meaning no pickup location found)
+  if (!pickupLocationData) {
     return (
       <Alert variant={"destructive"}>
         <IndianRupeeIcon className="h-6 w-6" />
-        <AlertTitle className="text-normal">Rate Issue</AlertTitle>
+        <AlertTitle className="text-normal">Configuration Issue</AlertTitle>
         <AlertDescription>
-          Please Contact Admin To Fix Your Rates
+          No default pickup location found for your account. Please contact
+          admin to set up a pickup location.
         </AlertDescription>
       </Alert>
     );
   }
+
+  // To maintain the WarehouseCard component's expectation of an array,
+  // we can wrap the single pickup location object in an array.
+  const warehousesArrayForCard = [pickupLocationData];
 
   return (
     <form
@@ -239,7 +328,11 @@ const CreateOrderForm = () => {
         <div className="flex flex-col gap-2">
           <Label htmlFor="pincode">Pincode</Label>
           <div className="flex items-center gap-2">
-            <Input id="pincode" onChange={(e) => setPincode(e.target.value)} />
+            <Input
+              id="pincode"
+              onChange={(e) => setPincode(e.target.value)}
+              value={pincode}
+            />
             <Button onClick={getPincodeDetails}>Get Details</Button>
           </div>
         </div>
@@ -264,10 +357,6 @@ const CreateOrderForm = () => {
 
       <h3 className="font-semibold">Order Details</h3>
       <div className="flex flex-wrap items-center gap-10 py-5">
-        {/* <div className="flex flex-col gap-2">
-          <Label htmlFor="state">Payment Mode</Label>
-          <Input id="state" {...register("state")} />
-        </div> */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="productName">Product Name</Label>
           <Input
@@ -297,7 +386,8 @@ const CreateOrderForm = () => {
           <Label htmlFor="orderValue">Order Value</Label>
           <Input
             id="orderValue"
-            {...register("orderValue", { required: true })}
+            type="number"
+            {...register("orderValue", { required: true, valueAsNumber: true })}
           />
         </div>
       </div>
@@ -315,29 +405,52 @@ const CreateOrderForm = () => {
           </Label>
           <Input
             id="physicalWeight"
-            {...register("physicalWeight", { required: true })}
+            type="number"
+            step="0.01"
+            {...register("physicalWeight", {
+              required: true,
+              valueAsNumber: true,
+            })}
           />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="length">Length (in CM)</Label>
-          <Input id="length" {...register("length", { required: true })} />
+          <Input
+            id="length"
+            type="number"
+            step="0.01"
+            {...register("length", { required: true, valueAsNumber: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="breadth">Breadth (in CM)</Label>
-          <Input id="breadth" {...register("breadth", { required: true })} />
+          <Input
+            id="breadth"
+            type="number"
+            step="0.01"
+            {...register("breadth", { required: true, valueAsNumber: true })}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="height">Height (in CM)</Label>
-          <Input id="height" {...register("height", { required: true })} />
+          <Input
+            id="height"
+            type="number"
+            step="0.01"
+            {...register("height", { required: true, valueAsNumber: true })}
+          />
         </div>
       </div>
 
       <h3 className="font-semibold">Select Pickup Location</h3>
 
+      {/* Pass the single pickup location wrapped in an array */}
       <WarehouseCard
+        warehouses={warehousesArrayForCard}
         selectedWarehouseId={selectedWarehouseId}
         setSelectedWarehouseId={setSelectedWarehouseId}
       />
+
       <div className="my-2 flex items-center space-x-2 self-end">
         <Label htmlFor="insurance">
           Would You Like Insurance?{" "}
@@ -351,13 +464,59 @@ const CreateOrderForm = () => {
           onCheckedChange={(checked) => setInsured(checked)}
         />
       </div>
+
+      <Button
+        className="mt-2 self-end"
+        type="button"
+        size="lg"
+        onClick={handleEstimateRate}
+        disabled={
+          isEstimatingRate ||
+          !selectedWarehouseId || // This should now be set by useEffect
+          !pincode ||
+          !city ||
+          !state ||
+          physicalWeight === undefined ||
+          length === undefined ||
+          breadth === undefined ||
+          height === undefined ||
+          isNaN(physicalWeight) ||
+          isNaN(length) ||
+          isNaN(breadth) ||
+          isNaN(height) ||
+          physicalWeight <= 0 ||
+          length <= 0 ||
+          breadth <= 0 ||
+          height <= 0
+        }
+      >
+        {isEstimatingRate ? "Estimating..." : "Estimate Rate"}
+      </Button>
+
+      {estimatedRateData && (
+        <Alert className="mt-4 self-end">
+          <AlertTitle>Estimated Shipping Cost</AlertTitle>
+          <AlertDescription>
+            The estimated cost for this shipment is: **₹
+            {estimatedRateData.estimatedCost.toFixed(2)}**
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {estimateRateError && (
+        <Alert variant={"destructive"} className="mt-4 self-end">
+          <AlertTitle>Rate Estimation Error</AlertTitle>
+          <AlertDescription>{estimateRateError.message}</AlertDescription>
+        </Alert>
+      )}
+
       <Button
         className="mt-2 self-end"
         type="submit"
         size="lg"
-        disabled={isPending}
+        disabled={isCreatingOrder}
       >
-        Place Order
+        {isCreatingOrder ? "Placing Order..." : "Place Order"}
       </Button>
     </form>
   );

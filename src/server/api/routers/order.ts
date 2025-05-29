@@ -11,15 +11,7 @@ import { Tracker } from "~/lib/tracking-more";
 import { type TrackingItem } from "~/lib/tracking-more/modules/types";
 import moment from "moment";
 import { type Prisma } from "@prisma/client";
-
-interface UserAwbDetails {
-  awbNumber?: number | null;
-}
-
-interface Order {
-  userAwbDetails: UserAwbDetails;
-  // other properties of the order
-}
+import axios from "axios";
 
 const RejectOrderValidator = z.object({
   orderId: z.string(),
@@ -102,6 +94,137 @@ const CreateOrderValidator = z.object({
 });
 
 const orderRouter = createTRPCRouter({
+  // Assuming z, TRPCError, and protectedProcedure are imported from their respective libraries
+
+  estimateRate: protectedProcedure
+    .input(
+      z.object({
+        fromPincode: z.string(),
+        toPincode: z.string(),
+        physicalWeight: z.number(),
+        shipmentLength: z.number(),
+        shipmentBreadth: z.number(),
+        shipmentHeight: z.number(),
+        shipmentWeight: z.number(), // Keeping this as per original input, though it's often derived.
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      console.log(
+        "--- Entering order.estimateRate procedure (Internal Calculation, fixed I/O) ---",
+      );
+      console.log("Authenticated User ID:", ctx.session.user.id);
+      console.log("Received Input:", input);
+
+      const rateList = await ctx.db.rateList.findUnique({
+        where: { userId: ctx.session.user.id },
+      });
+
+      if (!rateList) {
+        console.error(
+          "Error: Rate List not found for user ID:",
+          ctx.session.user.id,
+        );
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Rate List not found for your account.",
+        });
+      }
+      console.log("RateList found:", rateList.id);
+
+      // --- 1. Calculate Volumetric Weight ---
+      // Standard volumetric weight calculation formula: (Length * Breadth * Height) / Volumetric Factor
+      // A common volumetric factor for air cargo is 5000 or 6000 (cm3/kg). Let's use 5000 as an example.
+      const VOLUMETRIC_FACTOR = 5000; // Consider making this configurable if it varies by carrier or service.
+
+      // Ensure dimensions are positive to avoid calculation issues
+      if (
+        input.shipmentLength <= 0 ||
+        input.shipmentBreadth <= 0 ||
+        input.shipmentHeight <= 0
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Shipment dimensions must be positive values.",
+        });
+      }
+
+      const volumetricWeight =
+        (input.shipmentLength * input.shipmentBreadth * input.shipmentHeight) /
+        VOLUMETRIC_FACTOR;
+      console.log("Calculated Volumetric Weight:", volumetricWeight);
+
+      // --- 2. Determine Chargeable Weight (Greater of Physical or Volumetric) ---
+      // Note: The input includes 'shipmentWeight'. Assuming 'physicalWeight' is the primary physical
+      // weight for comparison, or 'shipmentWeight' was intended to be the chargeable weight directly.
+      // For now, we'll use 'physicalWeight' as the basis for volumetric comparison.
+      const chargeableWeight = Math.max(input.physicalWeight, volumetricWeight);
+      console.log(
+        "Determined Chargeable Weight (max of physical and volumetric):",
+        chargeableWeight,
+      );
+
+      // --- 3. Calculate Base Rate based on Chargeable Weight and Internal Rate List ---
+      let baseRate = 0;
+      const weightToMatch = chargeableWeight; // Use the determined chargeable weight for rate lookup
+
+      const weightSlabs = [
+        { limit: 0.5, price: rateList.halfKgPrice },
+        { limit: 1, price: rateList.oneKgPrice },
+        { limit: 2, price: rateList.twoKgPrice },
+        { limit: 3, price: rateList.threeKgPrice },
+        { limit: 5, price: rateList.fiveKgPrice },
+        { limit: 7, price: rateList.sevenKgPrice },
+        { limit: 10, price: rateList.tenKgPrice },
+        { limit: 12, price: rateList.twelveKgPrice },
+        { limit: 15, price: rateList.fifteenKgPrice },
+        { limit: 17, price: rateList.seventeenKgPrice },
+        { limit: 20, price: rateList.twentyKgPrice },
+        { limit: 22, price: rateList.twentyTwoKgPrice },
+        { limit: 25, price: rateList.twentyFiveKgPrice },
+        { limit: 28, price: rateList.twentyEightKgPrice },
+        { limit: 30, price: rateList.thirtyKgPrice },
+        { limit: 35, price: rateList.thirtyFiveKgPrice },
+        { limit: 40, price: rateList.fortyKgPrice },
+        { limit: 45, price: rateList.fortyFiveKgPrice },
+        { limit: 50, price: rateList.fiftyKgPrice },
+        // Add more slabs if your rate list supports higher weights, or implement a per-kg surcharge.
+      ];
+
+      const matchedSlab = weightSlabs.find(
+        (slab) => weightToMatch <= slab.limit,
+      );
+
+      if (!matchedSlab) {
+        console.error(
+          "Error: No matching weight slab found for chargeable weight:",
+          weightToMatch,
+        );
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Shipment weight exceeds supported limit (50kg) or invalid weight provided.",
+        });
+      }
+
+      baseRate = matchedSlab.price;
+      console.log("Base Rate from Internal Rate List:", baseRate);
+
+      // --- 4. Final Estimated Cost ---
+      // With current input/output, insurance cannot be dynamically opted in.
+      // If insurance is a default cost, it should be part of the baseRate in rateList or added here as a fixed/percentage.
+      // For now, estimatedCost is solely based on the baseRate.
+      const estimatedCost = baseRate; // No insurance added as per input/output constraint
+
+      console.log(
+        "Final Estimated Cost (Internal Calculation):",
+        estimatedCost,
+      );
+
+      return {
+        estimatedCost,
+      };
+    }),
+
   createOrder: protectedProcedure
     .input(CreateOrderValidator)
     .mutation(async ({ ctx, input }) => {
@@ -131,51 +254,40 @@ const orderRouter = createTRPCRouter({
         });
       }
 
-      let rate = 0;
-      if (input.physicalWeight <= 0.5) {
-        rate = rateList.halfKgPrice;
-      } else if (input.physicalWeight <= 1) {
-        rate = rateList.oneKgPrice;
-      } else if (input.physicalWeight <= 2) {
-        rate = rateList.twoKgPrice;
-      } else if (input.physicalWeight <= 3) {
-        rate = rateList.threeKgPrice;
-      } else if (input.physicalWeight <= 5) {
-        rate = rateList.fiveKgPrice;
-      } else if (input.physicalWeight <= 7) {
-        rate = rateList.sevenKgPrice;
-      } else if (input.physicalWeight <= 10) {
-        rate = rateList.tenKgPrice;
-      } else if (input.physicalWeight <= 12) {
-        rate = rateList.twelveKgPrice;
-      } else if (input.physicalWeight <= 15) {
-        rate = rateList.fifteenKgPrice;
-      } else if (input.physicalWeight <= 17) {
-        rate = rateList.seventeenKgPrice;
-      } else if (input.physicalWeight <= 20) {
-        rate = rateList.twentyKgPrice;
-      } else if (input.physicalWeight <= 22) {
-        rate = rateList.twentyTwoKgPrice;
-      } else if (input.physicalWeight <= 25) {
-        rate = rateList.twentyFiveKgPrice;
-      } else if (input.physicalWeight <= 28) {
-        rate = rateList.twentyEightKgPrice;
-      } else if (input.physicalWeight <= 30) {
-        rate = rateList.thirtyKgPrice;
-      } else if (input.physicalWeight <= 35) {
-        rate = rateList.thirtyFiveKgPrice;
-      } else if (input.physicalWeight <= 40) {
-        rate = rateList.fortyKgPrice;
-      } else if (input.physicalWeight <= 45) {
-        rate = rateList.fortyFiveKgPrice;
-      } else if (input.physicalWeight <= 50) {
-        rate = rateList.fiftyKgPrice;
-      } else if (input.physicalWeight > 50) {
+      const weightBrackets = [
+        { limit: 0.5, price: rateList.halfKgPrice },
+        { limit: 1, price: rateList.oneKgPrice },
+        { limit: 2, price: rateList.twoKgPrice },
+        { limit: 3, price: rateList.threeKgPrice },
+        { limit: 5, price: rateList.fiveKgPrice },
+        { limit: 7, price: rateList.sevenKgPrice },
+        { limit: 10, price: rateList.tenKgPrice },
+        { limit: 12, price: rateList.twelveKgPrice },
+        { limit: 15, price: rateList.fifteenKgPrice },
+        { limit: 17, price: rateList.seventeenKgPrice },
+        { limit: 20, price: rateList.twentyKgPrice },
+        { limit: 22, price: rateList.twentyTwoKgPrice },
+        { limit: 25, price: rateList.twentyFiveKgPrice },
+        { limit: 28, price: rateList.twentyEightKgPrice },
+        { limit: 30, price: rateList.thirtyKgPrice },
+        { limit: 35, price: rateList.thirtyFiveKgPrice },
+        { limit: 40, price: rateList.fortyKgPrice },
+        { limit: 45, price: rateList.fortyFiveKgPrice },
+        { limit: 50, price: rateList.fiftyKgPrice },
+      ];
+
+      const matchedRate = weightBrackets.find(
+        (w) => input.physicalWeight <= w.limit,
+      );
+
+      if (!matchedRate) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Weight more than 50kg not supported",
         });
       }
+
+      const rate = matchedRate.price;
 
       const totalCost = rate + (input.isInsured ? env.INSURANCE_COST : 0);
 
@@ -185,8 +297,6 @@ const orderRouter = createTRPCRouter({
           message: "Insufficient Funds!",
         });
       }
-
-      // deduct money from wallet
 
       const order = await ctx.db.order.create({
         data: {
@@ -273,6 +383,7 @@ const orderRouter = createTRPCRouter({
         },
       });
     }),
+
   getAllPickupLocation: protectedProcedure.query(async ({ ctx }) => {
     const pickupLocation = await ctx.db.pickupLocation.findUnique({
       where: {
@@ -598,8 +709,6 @@ const orderRouter = createTRPCRouter({
             message: response.meta.message,
           });
         }
-        // TODO: Remove this console.log after testing
-        // console.log("TRACKINGMORE RESPONSE CREATED", response.data);
 
         await ctx.db.order.update({
           where: {
