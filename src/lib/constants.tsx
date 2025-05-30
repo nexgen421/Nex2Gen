@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   ListOrderedIcon,
   Printer,
+  Calculator,
 } from "lucide-react";
 import {
   RiCustomerServiceLine,
@@ -170,6 +171,11 @@ export const userSidebarMenu = [
     label: "Print Label",
     href: "/print-label",
     icon: <Printer className="h-5 w-5" />,
+  },
+  {
+    label: "Rate Calculator",
+    href: "/rate-calculator",
+    icon: <Calculator className="h-5 w-5" />,
   },
 ];
 
