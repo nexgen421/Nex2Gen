@@ -20,14 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationItem,
-//   PaginationLink,
-//   PaginationNext,
-//   PaginationPrevious,
-// } from "~/components/ui/pagination";
+
 import {
   Card,
   CardContent,
@@ -45,32 +38,9 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Label } from "~/components/ui/label";
-import {
-  // Tooltip,
-  // TooltipTrigger,
-  // TooltipContent,
-  TooltipProvider,
-} from "~/components/ui/tooltip";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import moment from "moment";
-// import { SUBSTATUS } from "~/lib/constants";
-// import { cn } from "~/lib/utils";
 
-// interface TableCellTooltipProps {
-//   children: React.ReactNode;
-// }
-
-// const TableCellTooltip: React.FC<TableCellTooltipProps> = ({ children }) => {
-//   return (
-//     <Tooltip>
-//       <TooltipTrigger className="max-w-[200px] truncate">
-//         {children}
-//       </TooltipTrigger>
-//       <TooltipContent>{children}</TooltipContent>
-//     </Tooltip>
-//   );
-// };
-
-// Enums
 enum OrderStatus {
   BOOKED = "BOOKED",
   READY_TO_SHIP = "READY_TO_SHIP",
@@ -78,15 +48,15 @@ enum OrderStatus {
 }
 
 enum ShipmentStatus {
-  INFORECEIVED = "INFORECEIVED",
-  TRANSIT = "TRANSIT",
+  INFORECEIVED = "Manifested",
+  TRANSIT = "In Transit",
   PICKUP = "PICKUP",
   UNDELIVERED = "UNDELIVERED",
-  DELIVERED = "DELIVERED",
+  DELIVERED = "Delivered",
   EXCEPTION = "EXCEPTION",
   EXPIRED = "EXPIRED",
   NOTFOUND = "NOTFOUND",
-  PENDING = "PENDING",
+  PENDING = "Pending",
 }
 
 interface FilterBarProps {
@@ -354,9 +324,9 @@ const OrdersTable: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <div
-                            className={`${getStatusColor(order.status as OrderStatus | ShipmentStatus)} mx-auto w-fit rounded-full px-3 py-[2px] text-xs font-semibold capitalize text-white`}
+                            className={`${getStatusColor(order.trackingCurrentStatusDesc as ShipmentStatus)} mx-auto w-fit rounded-full px-3 py-[2px] text-xs font-semibold capitalize text-white`}
                           >
-                            {order.status}
+                            {order.trackingCurrentStatusDesc}
                           </div>
                         </TableCell>
                       </TableRow>

@@ -6,15 +6,15 @@ import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-  SelectItem,
-  SelectGroup,
-} from "~/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectLabel,
+//   SelectTrigger,
+//   SelectValue,
+//   SelectItem,
+//   SelectGroup,
+// } from "~/components/ui/select";
 import { toast } from "sonner";
 import { TRPCClientError } from "@trpc/client";
 import { api } from "~/trpc/react";
@@ -34,7 +34,7 @@ const RateCalculatorForm = () => {
   const { mutateAsync: estimateRateMutation, isPending } =
     api.order.estimateRate.useMutation();
 
-  const { register, handleSubmit, reset } = useForm<TRateCalculation>();
+  const { register, handleSubmit } = useForm<TRateCalculation>();
 
   const [estimatedCost, setEstimatedCost] = React.useState<number | null>(null);
 
@@ -44,9 +44,9 @@ const RateCalculatorForm = () => {
         fromPincode: String(data.pickupAreaPincode),
         toPincode: String(data.destinationAreaPincode),
         physicalWeight: parseFloat(String(data.weight)),
-        shipmentLength: parseFloat(String(data.length)),
-        shipmentBreadth: parseFloat(String(data.breadth)),
-        shipmentHeight: parseFloat(String(data.height)),
+        shipmentLength: 1,
+        shipmentBreadth: 1,
+        shipmentHeight: 1,
         shipmentWeight: parseFloat(String(data.weight)),
       };
 
@@ -70,7 +70,7 @@ const RateCalculatorForm = () => {
         onSubmit={handleSubmit(handleRateCalculation)}
         className="mt-10 flex max-w-4xl flex-col flex-wrap gap-6 px-2 py-4 md:flex-row"
       >
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <Label>Payment Mode</Label>
           <Select
             onValueChange={(val) => {
@@ -91,7 +91,7 @@ const RateCalculatorForm = () => {
               </SelectGroup>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="pickupPincode">Source Pincode</Label>
@@ -127,7 +127,7 @@ const RateCalculatorForm = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <Label htmlFor="dimensions">Dimensions (CM)</Label>
           <div className="flex w-full items-center gap-4 md:max-w-sm">
             <Input type="number" {...register("length")} placeholder="Length" />
@@ -138,7 +138,7 @@ const RateCalculatorForm = () => {
             />
             <Input type="number" {...register("height")} placeholder="Height" />
           </div>
-        </div>
+        </div> */}
 
         <div className="flex flex-grow flex-col gap-2">
           <Label htmlFor="declaredValue">Declared Value In INR</Label>
@@ -170,7 +170,7 @@ const RateCalculatorForm = () => {
       {estimatedCost !== null && (
         <div className="mt-6 rounded-md border bg-green-50 p-4 text-green-800 shadow-sm">
           <p className="text-lg font-semibold">
-            Estimated Shipping Cost: ₹{estimatedCost}
+            Shipping Cost: ₹{estimatedCost}
           </p>
         </div>
       )}

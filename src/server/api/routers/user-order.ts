@@ -121,6 +121,7 @@ const userOrderRouter = createTRPCRouter({
         select: {
           id: true,
           orderValue: true,
+          status: true,
           orderAdressDetails: {
             select: {
               city: true,
@@ -164,6 +165,8 @@ const userOrderRouter = createTRPCRouter({
           },
         },
       });
+
+      console.log(orders);
 
       let nextCursor: string | undefined = undefined;
       if (orders.length > limit) {
@@ -350,8 +353,7 @@ const userOrderRouter = createTRPCRouter({
       const totalOrderCount = await ctx.db.order.count({
         where,
       });
-      const menupulated_orders = orders.map((order, i) => {
-        console.log(i, order);
+      const menupulated_orders = orders.map((order) => {
         return {
           ...order,
           userAwbDetails: {

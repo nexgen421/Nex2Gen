@@ -48,7 +48,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import { SUBSTATUS } from "~/lib/constants";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
@@ -293,14 +292,7 @@ const OrderListTable = ({ shipmentType }: { shipmentType: ShipmentStatus }) => {
                 <TableCell>
                   {!(shipmentType === "BOOKED") && (
                     <>
-                      <div>
-                        {order.shipment?.subStatus
-                          ? SUBSTATUS[
-                              order.shipment.subStatus as keyof typeof SUBSTATUS
-                            ]
-                          : ""}
-                      </div>
-                      <div>{order.shipment?.latestEvent}</div>
+                      <div>{order.status}</div>
                     </>
                   )}
                   {shipmentType === "BOOKED" && <>N/A</>}
